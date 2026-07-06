@@ -1,0 +1,109 @@
+[
+  {
+    "id": "er-model-v1",
+    "title": "ER Model V1 — PostgreSQL Database Schema",
+    "description": "Design PostgreSQL database schema V1 based on canonical domain model. Requirements: PostgreSQL 16, UUID primary keys, soft delete support, audit fields, future AI support. Output: table list, columns, PK/FK, index recommendations. Save to docs/domain/database_schema_v1.md. Do not generate SQL yet.",
+    "status": "completed",
+    "category": "database",
+    "priority": "high",
+    "created_at": "2026-06-07T08:39:38.065219Z",
+    "updated_at": "2026-06-07T08:43:46.306127Z"
+  },
+  {
+    "id": "sprint-04-status-doc",
+    "title": "Sprint 4 — Документировать статус всех завершённых фаз",
+    "description": "BEFORE: project_status.md показывает Sprint 3 (Planning). Sprint 4 P2.1 AI Runtime Foundation, P2.1 Review Corrections, P3 Context Builder V1, P4 Memory Layer, P5 Security Layer — уже реализованы, но не отражены. AFTER: Добавить Sprint 4 секции с перечнем всех файлов и скорингов.",
+    "status": "completed",
+    "category": "documentation",
+    "priority": "high",
+    "created_at": "2026-06-09T11:38:40.142096+00:00",
+    "updated_at": "2026-06-09T11:39:11.103046+00:00",
+    "result": {
+      "added_to_status": "Sprint 4 — AI Runtime (Completed)",
+      "sections_added": [
+        "P2.1 AI Runtime Foundation — 16 files, score 94/100",
+        "P3 Context Builder V1 — 10 files, 30 tests, score 92/100",
+        "P4 Memory Layer V1 — 14 files, 51 tests",
+        "P5 Security Layer V1 — 11 files, 78 tests"
+      ],
+      "delta": "8063 chars → 11805 chars (+46%)"
+    }
+  },
+  {
+    "id": "p55-deal-governance",
+    "title": "P5.5 Deal Governance Foundation",
+    "description": "BEFORE: Нет check_deal_completeness, validate_document_package, get_regulation. Deal без чекпоинтов и документов. AFTER: 3 модели, 3 репозитория, 2 сервиса, 3 MCP tools, 2 миграции, 3 типа сделок с чекпоинтами.",
+    "status": "completed",
+    "category": "backend",
+    "priority": "high",
+    "created_at": "2026-06-09T12:08:36.238103+00:00",
+    "updated_at": "2026-06-09T12:08:36.238151+00:00",
+    "result": {
+      "files_created": 8,
+      "files_modified": 4,
+      "migrations": 2,
+      "deal_types": 3,
+      "mcp_tools": 3
+    }
+  },
+  {
+    "id": "sprint-04-p6-agent-runtime",
+    "title": "Sprint 4 — Phase P6: Agent Runtime V1",
+    "description": "BEFORE: No agent orchestration. Intent, tools, context, LLM — all manual. AFTER: 15 files, 44 tests, 8 metrics, 3 API endpoints, 6 tools (3 governance + 3 CRM stubs). Intent classification and tool planning: rule-based, deterministic.",
+    "status": "completed",
+    "category": "backend",
+    "priority": "high",
+    "created_at": "2026-06-09T12:20:21.024236+00:00",
+    "updated_at": "2026-06-09T12:20:21.024280+00:00",
+    "result": {
+      "files_created": 15,
+      "files_modified": 4,
+      "migrations": 1,
+      "tests": 44,
+      "metrics": 8,
+      "tools": 6,
+      "api_endpoints": 3,
+      "production_readiness": 88
+    }
+  },
+  {
+    "id": "sync-docs-mcp",
+    "title": "Синхронизация docs и MCP с backend-кодом",
+    "description": "Обновлены: project_status.md, entities.md, architecture.md. Создан sync_docs_from_code.py. Исправлен event bus import. MCP дополнен.",
+    "status": "completed",
+    "category": "infrastructure",
+    "priority": "high",
+    "created_at": "2026-06-09T20:34:16.860326+00:00",
+    "updated_at": "2026-06-09T20:34:16.860492+00:00"
+  },
+  {
+    "id": "fix-partitioning",
+    "title": "Доработать партиционирование (Migration 018 execute)",
+    "description": "Partition tables ai_call_log, agent_tool_calls, compliance_audits по месяцам",
+    "status": "pending",
+    "category": "infrastructure",
+    "priority": "high",
+    "created_at": "2026-06-09T20:34:16.860505+00:00",
+    "updated_at": "2026-06-09T20:34:16.860512+00:00"
+  },
+  {
+    "id": "fix-knowledge-sync",
+    "title": "Подключить Knowledge Sync (CRM→Graph через EventBus)",
+    "description": "Client/Property/Deal services должны emit события. GraphLifecycleService.sync_entity должен вызываться.",
+    "status": "pending",
+    "category": "knowledge",
+    "priority": "high",
+    "created_at": "2026-06-09T20:34:16.860520+00:00",
+    "updated_at": "2026-06-09T20:34:16.860527+00:00"
+  },
+  {
+    "id": "test-event-bus",
+    "title": "Покрыть Event Bus тестами (emit + handler)",
+    "description": "Тесты для всех 16 типов событий + интеграционный тест CRM→Graph",
+    "status": "pending",
+    "category": "testing",
+    "priority": "medium",
+    "created_at": "2026-06-09T20:34:16.860535+00:00",
+    "updated_at": "2026-06-09T20:34:16.860541+00:00"
+  }
+]

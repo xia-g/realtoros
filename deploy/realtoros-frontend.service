@@ -1,0 +1,23 @@
+[Unit]
+Description=Real Estate OS — Frontend (Next.js)
+After=network.target realtoros-api.service
+Wants=realtoros-api.service
+
+[Service]
+Type=simple
+User=hermes
+Group=prmer
+WorkingDirectory=/home/xiag/real-estate-os/frontend
+ExecStart=/usr/local/bin/npx next start --port 3000
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=NODE_ENV=production
+Environment=NEXT_PUBLIC_API_URL=http://127.0.0.1:8090
+Environment=NEXT_PUBLIC_WS_URL=ws://127.0.0.1:8090/ws
+Environment=NEXT_PUBLIC_OCR_NODE_URL=http://192.168.1.113:8000/api/v1
+
+[Install]
+WantedBy=multi-user.target
