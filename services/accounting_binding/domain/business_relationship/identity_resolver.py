@@ -14,11 +14,13 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 
 from domain.business_relationship.normalization import NormalizationService
-from domain.business_relationship.canonical_entity import (
-    CanonicalEntity, CanonicalProperty, CanonicalAgreement,
-)
+from domain.business_relationship.canonical_entity import CanonicalEntity
+from domain.business_relationship.canonical_entity_id import CanonicalEntityId
+from domain.business_relationship.canonical_property import CanonicalProperty
+from domain.business_relationship.canonical_agreement import CanonicalAgreement
+from domain.business_relationship.entity_alias import EntityAlias as Alias, AliasType
 from domain.business_relationship.support_models import (
-    Alias, AliasType, MergeCandidate, MergeDecision, ConfidenceHistory,
+    MergeCandidate, MergeDecision, ConfidenceHistory,
 )
 from domain.business_relationship.entity_types import EntityType, IdentifierType
 from domain.business_relationship.entity import BusinessEntity, EntityIdentifier
@@ -111,7 +113,7 @@ class IdentityResolver:
         display = e.display_name
         for idf in identifiers:
             if idf.identifier_type == IdentifierType.INN:
-                display = idf.normalized_value
+                display = idf.value
             elif idf.identifier_type == IdentifierType.CONTRACT_NUMBER:
                 pass  # not for display
 
@@ -125,14 +127,14 @@ class IdentityResolver:
             return matched
 
         # Create new canonical entity
-        ce = CanonicalEntity(entity_type=e.entity_type, display_name=display)
+        ce = CanonicalEntity(entity_type=e.entity_type, display_name=display, id=CanonicalEntityId.generate())
         if identifiers:
             # Best identifier
             for idf in identifiers:
                 if idf.identifier_type == IdentifierType.INN:
-                    ce.primary_identifier = idf.normalized_value
+                    ce.primary_identifier = idf.value
                     break
-            ce.identifiers = [idf.normalized_value for idf in identifiers]
+            ce.identifiers = [idf.value for idf in identifiers]
 
         ce.confirm(document_id)
         self._store.append(ce)
@@ -150,9 +152,9 @@ class IdentityResolver:
         address = ""
         for idf in identifiers:
             if idf.identifier_type == IdentifierType.CADASTRE:
-                cadastral = idf.normalized_value
+                cadastral = idf.value
             if idf.identifier_type == IdentifierType.ADDRESS:
-                address = idf.normalized_value
+                address = idf.value
 
         # Check existing properties
         for cp in self._properties:
@@ -200,14 +202,14 @@ class IdentityResolver:
 
     def _find_canonical(self, identifiers: list[EntityIdentifier]) -> CanonicalEntity | None:
         """Найти существующую каноническую сущность по любому идентификатору."""
-        norm_vals = {idf.normalized_value for idf in identifiers}
+        norm_vals = {idf.value for idf in identifiers}
         for ce in self._store:
             ce_norms = set(ce.identifiers)
             if norm_vals & ce_norms:
                 return ce
             # Also check aliases
             for alias in ce.aliases:
-                if alias.normalized_value in norm_vals:
+                if alias.value in norm_vals:
                     return ce
         return None
 
