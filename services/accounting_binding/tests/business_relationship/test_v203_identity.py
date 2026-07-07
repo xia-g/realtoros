@@ -12,7 +12,9 @@ from domain.business_relationship.entity_types import EntityType, IdentifierType
 from domain.business_relationship.fact import BusinessFact
 from domain.business_relationship.fact_types import FactType
 from domain.business_relationship.provenance import Provenance, DocumentRevision
-from domain.business_relationship.agreement import Agreement, KnowledgeState
+from domain.business_relationship.agreement import Agreement
+from domain.business_relationship.agreement_id import AgreementId
+from domain.business_relationship.knowledge_state import KnowledgeState
 from domain.business_relationship.agreement_types import AgreementType
 from domain.business_relationship.support_models import (
     Alias, AliasType, MergeCandidate, MergeDecision, ConfidenceHistory, ConfidencePoint,
@@ -164,7 +166,7 @@ class TestIdentityResolver:
 
     def test_agreement_resolution(self):
         resolver = IdentityResolver()
-        ag = Agreement(AgreementType.SALE, number="2182-НП/И")
+        ag = Agreement(agreement_type=AgreementType.SALE, number="2182-НП/И", id=AgreementId.generate())
         ctx = resolver.resolve(
             entities=[], identifiers=[], agreement=ag, facts=[], document_id="d-1",
         )
@@ -192,7 +194,7 @@ class TestIdentityResolver:
         inn_buyer = EntityIdentifier(IdentifierType.INN, "7840066803", buyer.id, confidence=0.90)
         cadastre = EntityIdentifier(IdentifierType.CADASTRE, "78:10:0005522:3018", prop.id, confidence=0.95)
 
-        ag = Agreement(AgreementType.SALE, number="2182-НП/И")
+        ag = Agreement(agreement_type=AgreementType.SALE, number="2182-НП/И", id=AgreementId.generate())
 
         ctx = resolver.resolve(
             entities=[seller, buyer, prop],

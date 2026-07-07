@@ -3,13 +3,19 @@ BusinessFact — immutable observation extracted from a document.
 
 @dataclass(frozen=True) — NO mutation after creation.
 Facts DO NOT interpret. Inference is a separate layer.
+
+Uses typed value objects: FactId, FactValue, FactConfidence, FactSource, FactEvidence.
 """
 from __future__ import annotations
 
-import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.business_relationship.fact_types import FactType
+from domain.business_relationship.fact_id import FactId
+from domain.business_relationship.fact_value import FactValue
+from domain.business_relationship.fact_confidence import FactConfidence
+from domain.business_relationship.fact_source import FactSource
+from domain.business_relationship.fact_evidence import FactEvidence
 from domain.business_relationship.provenance import Provenance, DocumentRevision
 
 
@@ -23,10 +29,10 @@ class BusinessFact:
     fact_type: FactType
     subject_entity_id: str
     provenance: Provenance
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    id: FactId
     object_entity_id: str | None = None
-    value: str | None = None          # для AMOUNT_OF (сумма), DATE_OF (дата)
-    confidence: float = 1.0
+    value: FactValue | None = None
+    confidence: FactConfidence | None = None
 
     @property
     def document_id(self) -> str:
@@ -39,7 +45,9 @@ class BusinessFact:
     def __repr__(self) -> str:
         parts = [f"{self.fact_type.value}(subject={self.subject_entity_id[:8]})"]
         if self.object_entity_id:
-            parts.append(f"object={self.object_entity_id[:8]})")
+            parts.append(f"object={self.object_entity_id[:8]}")
         if self.value:
-            parts.append(f"value={self.value})")
+            parts.append(f"value={self.value}")
+        if self.confidence:
+            parts.append(f"conf={float(self.confidence):.2f}")
         return " ".join(parts)

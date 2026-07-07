@@ -9,11 +9,15 @@ import pytest
 from domain.business_relationship.entity import BusinessEntity
 from domain.business_relationship.entity_types import EntityType, IdentifierType
 from domain.business_relationship.fact import BusinessFact
+from domain.business_relationship.fact_id import FactId
+from domain.business_relationship.fact_confidence import FactConfidence
+from domain.business_relationship.fact_value import FactValue
 from domain.business_relationship.fact_types import FactType
 from domain.business_relationship.provenance import Provenance, DocumentRevision
 from domain.business_relationship.document_reference import DocumentReference, ReferenceType
 from domain.business_relationship.agreement_types import AgreementType, ParticipantRole
 from domain.business_relationship.agreement import Agreement
+from domain.business_relationship.agreement_id import AgreementId
 from domain.business_relationship.agreement_participant import AgreementParticipant
 from domain.business_relationship.semantic_interpreter import SemanticInterpreter, SemanticInterpretation
 from domain.business_relationship.agreement_matcher import AgreementMatcher
@@ -26,7 +30,8 @@ def _make_prov():
     return Provenance(document_revision=DocumentRevision(document_id="doc-1"))
 
 def _make_fact(ftype: FactType, value: str = "", **kw) -> BusinessFact:
-    return BusinessFact(fact_type=ftype, subject_entity_id="d", provenance=_make_prov(), value=value, **kw)
+    return BusinessFact(fact_type=ftype, subject_entity_id="d", provenance=_make_prov(), 
+                        id=FactId.generate(), value=FactValue.from_str(value) if value else None, confidence=FactConfidence.medium(), **kw)
 
 def _entity(t: EntityType, name: str, eid: str | None = None) -> BusinessEntity:
     e = BusinessEntity(entity_type=t, display_name=name)
@@ -118,13 +123,13 @@ class TestSemanticInterpreter:
 
 class TestAgreementMatcher:
     def test_find_by_number(self):
-        a = Agreement(AgreementType.SALE, number="2182-НП/И")
+        a = Agreement(agreement_type=AgreementType.SALE, number="2182-НП/И", id=AgreementId.generate())
         m = AgreementMatcher([a])
         assert m.find_by_number("2182-НП/И") is not None
         assert m.find_by_number("9999") is None
 
     def test_document_reference_match(self):
-        a = Agreement(AgreementType.SALE, number="2182-НП/И")
+        a = Agreement(agreement_type=AgreementType.SALE, number="2182-НП/И", id=AgreementId.generate())
         m = AgreementMatcher([a])
         ref = DocumentReference(ReferenceType.ACT_FOR, "akt-1", "2182-НП/И", provenance=_make_prov())
         found = m.find_or_none(document_references=[ref])
@@ -155,7 +160,7 @@ class TestAgreementResolver:
         assert len(ctx.participants) == 2
 
     def test_existing_agreement_reused(self):
-        a = Agreement(AgreementType.SALE, number="2182-НП")
+        a = Agreement(agreement_type=AgreementType.SALE, number="2182-НП", id=AgreementId.generate())
         m = AgreementMatcher([a])
         resolver = AgreementResolver(matcher=m)
         ctx = resolver.resolve(

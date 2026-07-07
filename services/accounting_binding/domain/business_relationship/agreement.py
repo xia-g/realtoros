@@ -1,41 +1,56 @@
 """
-Agreement — business interpretation of document(s).
+Agreement — immutable domain aggregate.
 
 NOT a Document entity. Agreement is inferred from neutral facts.
-In-memory only for v2.0.2. NO DB writes.
+Immutable. Serializable. Hashable. Technology-independent.
 """
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from enum import Enum
 
 from domain.business_relationship.agreement_types import AgreementType
+from domain.business_relationship.agreement_id import AgreementId
+from domain.business_relationship.agreement_status import AgreementStatus
+from domain.business_relationship.agreement_period import AgreementPeriod
+from domain.business_relationship.agreement_participant import AgreementParticipant
+from domain.business_relationship.agreement_reference import AgreementReference, ReferenceKind
+from domain.business_relationship.agreement_metadata import AgreementMetadata
 
 
-class KnowledgeState(str, Enum):
-    ACTIVE = "active"
-    SUPERSEDED = "superseded"
-    HISTORICAL = "historical"
-
-
-@dataclass
+@dataclass(frozen=True)
 class Agreement:
-    """Agreement — интерпретация одного или нескольких документов."""
+    """Соглашение — каноническое описание бизнес-отношения.
+
+    Immutable. Не содержит выводов.
+    Не знает о Knowledge, Graph, Revision, Projection, Query.
+    """
     agreement_type: AgreementType
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    number: str = ""                          # номер договора
-    date: date | None = None                  # дата договора
-    currency: str = "RUB"
+    id: AgreementId
+    number: str = ""
+    date: date | None = None
     amount: Decimal = Decimal("0")
-    document_entity_id: str = ""              # ссылка на Document entity
-    supporting_document_ids: list[str] = field(default_factory=list)  # другие документы
-    knowledge_state: KnowledgeState = KnowledgeState.ACTIVE
-    confidence: float = 0.0
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    currency: str = "RUB"
+    status: AgreementStatus = AgreementStatus.DRAFT
+    period: AgreementPeriod = field(default_factory=AgreementPeriod)
+    participants: tuple[AgreementParticipant, ...] = ()
+    references: tuple[AgreementReference, ...] = ()
+    metadata: AgreementMetadata = field(default_factory=AgreementMetadata)
+
+    @property
+    def participant_count(self) -> int:
+        return len(self.participants)
 
     @property
     def summary(self) -> str:
-        return f"{self.agreement_type.value}#{self.number or self.id[:8]}"
+        return f"{self.agreement_type.value}#{self.number or str(self.id)[:8]}"
+
+    def __repr__(self) -> str:
+        return (
+            f"Agreement(type={self.agreement_type.value}, "
+            f"id={self.id}, "
+            f"number={self.number or '-'}, "
+            f"participants={self.participant_count}, "
+            f"status={self.status.value})"
+        )

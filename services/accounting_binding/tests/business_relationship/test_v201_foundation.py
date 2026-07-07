@@ -15,6 +15,9 @@ from domain.business_relationship.entity import BusinessEntity, EntityIdentifier
 from domain.business_relationship.entity_resolver import EntityResolver
 from domain.business_relationship.provenance import Provenance, DocumentRevision
 from domain.business_relationship.fact import BusinessFact
+from domain.business_relationship.fact_id import FactId
+from domain.business_relationship.fact_confidence import FactConfidence
+from domain.business_relationship.fact_value import FactValue
 from domain.business_relationship.fact_types import FactType
 from domain.business_relationship.entity_extractor import EntityExtractor
 from domain.business_relationship.fact_extractor import FactExtractor

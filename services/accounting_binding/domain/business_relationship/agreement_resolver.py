@@ -13,8 +13,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from domain.business_relationship.agreement import Agreement, KnowledgeState
+from domain.business_relationship.agreement import Agreement
 from domain.business_relationship.agreement_types import AgreementType
+from domain.business_relationship.agreement_id import AgreementId
+from domain.business_relationship.agreement_metadata import AgreementMetadata
 from domain.business_relationship.agreement_participant import AgreementParticipant
 from domain.business_relationship.semantic_interpreter import SemanticInterpreter, SemanticInterpretation
 from domain.business_relationship.agreement_matcher import AgreementMatcher
@@ -81,7 +83,7 @@ class AgreementResolver:
         contract_number = ""
         for f in facts:
             if f.fact_type == FactType.DOCUMENT_HAS_CONTRACT_NUMBER and f.value:
-                contract_number = f.value
+                contract_number = str(f.value)
 
         # Also check entities for DOCUMENT type
         doc_entities = [e for e in entities if e.entity_type.value == "document"]
@@ -96,15 +98,11 @@ class AgreementResolver:
 
         if existing:
             evidence.append(f"Found existing agreement: {existing.summary}")
-            # Add supporting docs
-            if document_id not in existing.supporting_document_ids:
-                existing.supporting_document_ids.append(document_id)
-
-            # Reuse existing participants
+            # References are tracked externally (Agreement is immutable)
             return AgreementContext(
                 agreement=existing,
-                participants=[],  # will be populated per-agreement
-                supporting_document_ids=existing.supporting_document_ids,
+                participants=[],
+                supporting_document_ids=[document_id],  # tracked externally
                 document_references=document_references or [],
                 confidence=max(0.90, interpretation.confidence),
                 resolution_evidence=evidence,
@@ -115,15 +113,21 @@ class AgreementResolver:
         amount = Decimal("0")
         for f in facts:
             if f.fact_type == FactType.DOCUMENT_HAS_AMOUNT and f.value:
-                try: amount = Decimal(f.value)
-                except: pass
+                try: 
+                    if f.value:
+                        amount = Decimal(str(f.value))
+                except Exception:
+                    pass
 
         agreement = Agreement(
             agreement_type=interpretation.agreement_type,
+            id=AgreementId.generate(),
             number=contract_number,
             amount=amount,
-            document_entity_id=doc_entities[0].id if doc_entities else "",
-            confidence=interpretation.confidence,
+            metadata=AgreementMetadata(
+                source_document_id=doc_entities[0].id if doc_entities else "",
+                confidence=interpretation.confidence,
+            ),
         )
         evidence.append(f"Created new agreement: {agreement.summary}")
 

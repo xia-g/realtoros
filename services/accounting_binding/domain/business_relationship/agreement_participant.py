@@ -1,25 +1,24 @@
 """
 AgreementParticipant — role of an entity in an agreement.
 
-NOT list[str]. Each participant has a role, share, and time range.
+Immutable. Each participant has a role, share, and time range.
 """
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass, field
-from datetime import date
+from decimal import Decimal
 
 from domain.business_relationship.agreement_types import ParticipantRole
+from domain.business_relationship.agreement_id import AgreementId
+from domain.business_relationship.agreement_period import AgreementPeriod
 
 
-@dataclass
+@dataclass(frozen=True)
 class AgreementParticipant:
-    """Участник соглашения с ролью."""
-    agreement_id: str
-    entity_id: str                            # ссылка на BusinessEntity
+    """Участник соглашения с ролью. Immutable."""
+    agreement_id: AgreementId
+    entity_id: str
     participant_role: ParticipantRole
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    share: float | None = None                # доля (для нескольких участников)
-    valid_from: date | None = None
-    valid_to: date | None = None
-    confidence: float = 0.0
+    share: Decimal | None = None
+    period: AgreementPeriod = field(default_factory=AgreementPeriod)
+    confidence: float = 1.0
