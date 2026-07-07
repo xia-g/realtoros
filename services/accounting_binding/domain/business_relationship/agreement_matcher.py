@@ -1,65 +1,101 @@
 """
-AgreementMatcher — find existing agreements from context.
+AgreementMatcher — match candidates against existing agreements.
 
-Uses: contract number, date, participants, property, amount.
-NO SQL. Works with in-memory models.
+Decision only. NO mutation. NO side effects.
+Deterministic: same candidate + same existing → same decision.
 """
 from __future__ import annotations
 
 from domain.business_relationship.agreement import Agreement
-from domain.business_relationship.agreement_participant import AgreementParticipant
-from domain.business_relationship.document_reference import DocumentReference, ReferenceType
+from domain.business_relationship.agreement_candidate import AgreementCandidate
+from domain.business_relationship.agreement_match_result import (
+    AgreementMatchResult, MatchDecision,
+)
 
 
 class AgreementMatcher:
-    """Поиск существующих соглашений."""
+    """Сопоставляет кандидата с существующими соглашениями.
 
-    def __init__(self, existing_agreements: list[Agreement] | None = None):
-        self._agreements: dict[str, Agreement] = {}
-        self._by_number: dict[str, str] = {}  # number → agreement_id
-        if existing_agreements:
-            for a in existing_agreements:
-                self._agreements[a.id] = a
-                if a.number:
-                    self._by_number[a.number] = a.id
+    Stateless. Decision only. NO mutation of agreements.
+    """
 
-    def find_by_number(self, number: str) -> Agreement | None:
-        if not number:
-            return None
-        aid = self._by_number.get(number)
-        return self._agreements.get(aid) if aid else None
+    @staticmethod
+    def match(
+        candidate: AgreementCandidate,
+        existing_agreements: list[Agreement],
+    ) -> AgreementMatchResult:
+        """Сопоставить кандидата с существующими соглашениями.
 
-    def find_or_none(
-        self,
+        Returns MatchDecision:
+          - MATCHED: exact match found
+          - NO_MATCH: new agreement needed
+          - AMBIGUOUS: multiple candidates match
+          - CONFLICT: contradictory information
+        """
+        if not candidate.contract_number:
+            return AgreementMatchResult(
+                decision=MatchDecision.NO_MATCH,
+                candidate=candidate,
+                reason="No contract number to match against",
+            )
+
+        norm_candidate = candidate.contract_number.strip().upper()
+
+        # Find all agreements with matching number
+        matches: list[Agreement] = []
+        for a in existing_agreements:
+            if a.number and a.number.strip().upper() == norm_candidate:
+                matches.append(a)
+
+        if len(matches) == 1:
+            return AgreementMatchResult(
+                decision=MatchDecision.MATCHED,
+                candidate=candidate,
+                matched_agreement=matches[0],
+                reason=f"Exact match by contract number '{candidate.contract_number}'",
+                confidence=max(0.95, candidate.confidence),
+            )
+
+        if len(matches) > 1:
+            return AgreementMatchResult(
+                decision=MatchDecision.AMBIGUOUS,
+                candidate=candidate,
+                reason=f"Multiple agreements ({len(matches)}) match number '{candidate.contract_number}'",
+            )
+
+        # Check by document references
+        doc_ids = candidate.supporting_document_ids
+        for a in existing_agreements:
+            if a.metadata.source_document_id in doc_ids:
+                return AgreementMatchResult(
+                    decision=MatchDecision.MATCHED,
+                    candidate=candidate,
+                    matched_agreement=a,
+                    reason=f"Matched by source document '{a.metadata.source_document_id}'",
+                    confidence=0.85,
+                )
+
+        return AgreementMatchResult(
+            decision=MatchDecision.NO_MATCH,
+            candidate=candidate,
+            reason=f"No existing agreement matches '{candidate.contract_number}'",
+        )
+
+    @staticmethod
+    def find_exact(
+        existing_agreements: list[Agreement],
+        *,
         number: str = "",
-        document_references: list[DocumentReference] | None = None,
+        document_id: str = "",
     ) -> Agreement | None:
-        """Find existing agreement by any matching criteria."""
-        # 1. By contract number (most reliable)
+        """Find exact agreement by number or document ID. Pure query."""
         if number:
             norm = number.strip().upper()
-            for aid, a in self._agreements.items():
+            for a in existing_agreements:
                 if a.number and a.number.strip().upper() == norm:
                     return a
-
-        # 2. By document reference
-        if document_references:
-            for ref in document_references:
-                if ref.reference_type in (ReferenceType.ACT_FOR, ReferenceType.REFERS_TO, 
-                                          ReferenceType.APPENDIX_TO, ReferenceType.EXECUTES):
-                    # The target identifier might match an agreement number
-                    norm_ref = ref.target_document_identifier.strip().upper()
-                    for a in self._agreements.values():
-                        if a.number and a.number.strip().upper() == norm_ref:
-                            return a
-
+        if document_id:
+            for a in existing_agreements:
+                if a.metadata.source_document_id == document_id:
+                    return a
         return None
-
-    def register(self, agreement: Agreement):
-        self._agreements[agreement.id] = agreement
-        if agreement.number:
-            self._by_number[agreement.number] = agreement.id
-
-    @property
-    def agreements(self) -> list[Agreement]:
-        return list(self._agreements.values())
