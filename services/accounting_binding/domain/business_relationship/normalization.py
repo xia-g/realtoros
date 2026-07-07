@@ -125,5 +125,18 @@ class NormalizationService:
         return re.sub(r"\s+", "", cadastre.strip())
 
     @staticmethod
+    def normalize_inn(inn: str) -> str:
+        if not inn:
+            return ""
+        v = "".join(c for c in inn if c.isdigit())
+        return v[:12] if len(v) > 12 else v
+
+    @staticmethod
+    def normalize_ogrn(ogrn: str) -> str:
+        if not ogrn:
+            return ""
+        return "".join(c for c in ogrn if c.isdigit())[:13]
+
+    @staticmethod
     def normalize_bank_account(account: str) -> str:
         return "".join(c for c in account if c.isdigit()) if account else ""

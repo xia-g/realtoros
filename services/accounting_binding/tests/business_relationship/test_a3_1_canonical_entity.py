@@ -198,8 +198,9 @@ class TestCanonicalEntity:
 
     def test_equality(self):
         eid = CanonicalEntityId(value="x")
-        ce1 = CanonicalEntity(entity_type=EntityType.COMPANY, id=eid)
-        ce2 = CanonicalEntity(entity_type=EntityType.COMPANY, id=eid)
+        meta = IdentityMetadata(confidence=1.0)
+        ce1 = CanonicalEntity(entity_type=EntityType.COMPANY, id=eid, metadata=meta)
+        ce2 = CanonicalEntity(entity_type=EntityType.COMPANY, id=eid, metadata=meta)
         assert ce1 == ce2
         ce3 = CanonicalEntity(entity_type=EntityType.PERSON, id=CanonicalEntityId(value="y"))
         assert ce1 != ce3
