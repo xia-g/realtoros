@@ -1,0 +1,626 @@
+{
+  "AccountEntry": [
+    {
+      "name": "account_code",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "side",
+      "type_hint": "<enum 'AccountingSide'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "amount",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "dimension",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "description",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "sequence",
+      "type_hint": "<class 'int'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "AccountingDocument": [
+    {
+      "name": "schema_version",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "trace_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "source",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_type",
+      "type_hint": "<enum 'DocumentType'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "enriched_document_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "company_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_date",
+      "type_hint": "<class 'datetime.date'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "entries",
+      "type_hint": "list[contracts.accounting_document.AccountEntry]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "tax_entries",
+      "type_hint": "list[contracts.accounting_document.TaxEntry]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "total_debit",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "total_credit",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "mapping_hash",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "approval_revision",
+      "type_hint": "<class 'int'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "approved_mapping_hash",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "status",
+      "type_hint": "<enum 'DocumentStatus'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "process_state",
+      "type_hint": "<enum 'ProcessingState'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "approval_required",
+      "type_hint": "<enum 'ApprovalRequired'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "CanonicalAmount": [
+    {
+      "name": "raw_text",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "amount",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "currency",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "CanonicalDate": [
+    {
+      "name": "raw_text",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "parsed_date",
+      "type_hint": "<class 'datetime.date'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "CanonicalEntity": [
+    {
+      "name": "raw_value",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "normalized_value",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "CounterpartyInfo": [
+    {
+      "name": "status",
+      "type_hint": "<enum 'CounterpartyStatus'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "name",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "inn",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "kpp",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "canonical_id",
+      "type_hint": "str | None",
+      "has_default": false,
+      "is_optional": true
+    },
+    {
+      "name": "confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "EnrichedDocument": [
+    {
+      "name": "schema_version",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "trace_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "source",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_type",
+      "type_hint": "<enum 'DocumentType'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "counterparty",
+      "type_hint": "<class 'contracts.enriched_document.CounterpartyInfo'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "counterparty_inn",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "counterparty_kpp",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "canonical_amounts",
+      "type_hint": "list[contracts.enriched_document.CanonicalAmount]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "canonical_dates",
+      "type_hint": "list[contracts.enriched_document.CanonicalDate]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_number",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "vat_numbers",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "ibans",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "addresses",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "persons",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "enrichment_confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "enrichment_warnings",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "dedup_hash",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "dedup_source_ids",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "source_document",
+      "type_hint": "contracts.normalized_document.NormalizedDocument | None",
+      "has_default": false,
+      "is_optional": true
+    }
+  ],
+  "EntityConfidence": [
+    {
+      "name": "ocr_confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "classification_confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "entities_confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "overall_confidence",
+      "type_hint": "<class 'float'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "JournalEntry": [
+    {
+      "name": "schema_version",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "entry_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "accounting_document_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "company_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_date",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "lines",
+      "type_hint": "list[contracts.journal_entry.JournalLine]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "total_debit",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "total_credit",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "posting_hash",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "process_state",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "posted_at",
+      "type_hint": "datetime.datetime | None",
+      "has_default": false,
+      "is_optional": true
+    },
+    {
+      "name": "posted_by",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "tracing_info",
+      "type_hint": "dict[str, typing.Any]",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "JournalLine": [
+    {
+      "name": "line_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "account_code",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "side",
+      "type_hint": "<enum 'AccountingSide'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "amount",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "dimension",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "description",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "sequence",
+      "type_hint": "<class 'int'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "NormalizedDocument": [
+    {
+      "name": "schema_version",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "trace_id",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "source",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "document_type",
+      "type_hint": "<enum 'DocumentType'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "pages",
+      "type_hint": "<class 'int'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "entities",
+      "type_hint": "<class 'contracts.normalized_document.NormalizedEntities'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "tables",
+      "type_hint": "list[list[dict[str, typing.Any]]]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "raw_text",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "metadata",
+      "type_hint": "dict[str, typing.Any]",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "confidence",
+      "type_hint": "<class 'contracts.normalized_document.EntityConfidence'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "warnings",
+      "type_hint": "list[str]",
+      "has_default": true,
+      "is_optional": false
+    }
+  ],
+  "TaxEntry": [
+    {
+      "name": "tax_code",
+      "type_hint": "<class 'str'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "tax_rate",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "taxable_amount",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    },
+    {
+      "name": "tax_amount",
+      "type_hint": "<class 'decimal.Decimal'>",
+      "has_default": true,
+      "is_optional": false
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="/home/xiag/real-estate-os"
+SERVICES_DIR="$ROOT/deploy"
+API_SERVICE="realtoros-api"
+FRONTEND_SERVICE="realtoros-frontend"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+cmd() {
+    case "${1:-help}" in
+        install)
+            echo -e "${YELLOW}Installing systemd services...${NC}"
+            sudo cp "$SERVICES_DIR/$API_SERVICE.service" /etc/systemd/system/
+            sudo cp "$SERVICES_DIR/$FRONTEND_SERVICE.service" /etc/systemd/system/
+            sudo systemctl daemon-reload
+            sudo systemctl enable "$API_SERVICE"
+            sudo systemctl enable "$FRONTEND_SERVICE"
+            echo -e "${GREEN}Services installed. Run: ./realtoros start${NC}"
+            ;;
+        start)
+            echo -e "${YELLOW}Starting API...${NC}"
+            sudo systemctl start "$API_SERVICE"
+            echo -e "${YELLOW}Starting Frontend...${NC}"
+            sudo systemctl start "$FRONTEND_SERVICE"
+            echo -e "${GREEN}Both services started. Check: ./realtoros status${NC}"
+            ;;
+        stop)
+            echo -e "${YELLOW}Stopping...${NC}"
+            sudo systemctl stop "$FRONTEND_SERVICE" 2>/dev/null || true
+            sudo systemctl stop "$API_SERVICE" 2>/dev/null || true
+            echo -e "${GREEN}Stopped.${NC}"
+            ;;
+        restart)
+            echo -e "${YELLOW}Building frontend...${NC}"
+            cd "$ROOT/frontend" && npx next build
+            echo -e "${YELLOW}Restarting services...${NC}"
+            sudo systemctl restart "$API_SERVICE"
+            sudo systemctl restart "$FRONTEND_SERVICE"
+            echo -e "${GREEN}Frontend rebuilt + services restarted.${NC}"
+            ;;
+        status)
+            echo "=== API ==="
+            sudo systemctl status "$API_SERVICE" --no-pager 2>&1 | head -12
+            echo ""
+            echo "=== Frontend ==="
+            sudo systemctl status "$FRONTEND_SERVICE" --no-pager 2>&1 | head -12
+            ;;
+        logs)
+            if [ "${2:-}" = "api" ]; then
+                sudo journalctl -u "$API_SERVICE" -n 50 --no-pager -f
+            elif [ "${2:-}" = "frontend" ]; then
+                sudo journalctl -u "$FRONTEND_SERVICE" -n 50 --no-pager -f
+            else
+                sudo journalctl -u "$API_SERVICE" -n 30 --no-pager
+                echo "---"
+                sudo journalctl -u "$FRONTEND_SERVICE" -n 30 --no-pager
+            fi
+            ;;
+        kill-stale)
+            echo -e "${YELLOW}Killing stale uvicorn/node processes...${NC}"
+            pkill -f "uvicorn backend.main" 2>/dev/null && echo "killed uvicorn" || echo "no uvicorn"
+            pkill -f "next start" 2>/dev/null && echo "killed next" || echo "no next"
+            sleep 2
+            echo -e "${GREEN}Done.${NC}"
+            ;;
+        *)
+            echo "Usage: ./realtoros <command>"
+            echo ""
+            echo "Commands:"
+            echo "  install       Install systemd services (first time)"
+            echo "  start         Start both services"
+            echo "  stop          Stop both services"
+            echo "  restart       Restart both services"
+            echo "  status        Show service status"
+            echo "  logs [api|frontend]  Show logs"
+            echo "  kill-stale    Kill orphan processes"
+            ;;
+    esac
+}
+
+cmd "$@"

@@ -1,0 +1,19 @@
+[Unit]
+Description=Real Estate OS — Frontend (Next.js)
+After=network.target realtoros-api.service
+Wants=realtoros-api.service
+
+[Service]
+Type=simple
+User=xiag
+Group=xiag
+WorkingDirectory=/home/xiag/real-estate-os/frontend
+ExecStart=/usr/bin/npx next start --port 3000
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

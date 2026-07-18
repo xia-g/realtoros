@@ -1,0 +1,1202 @@
+[
+  {
+    "filename": "bill_1.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "bill_2.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "документ_3.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "receipt_4.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "договор_5.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "receipt_6.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "счет_7.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "документ_8.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "чек_9.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "payment_10.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "акт_11.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "чек_12.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "чек_13.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "документ_14.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "doc_15.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "doc_16.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "акт_17.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "payment_18.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "договор_19.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "contract_20.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "doc_21.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "платеж_22.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "doc_23.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "платеж_24.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "invoice_25.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "акт_26.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "act_27.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "договор_28.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "receipt_29.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "payment_30.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "чек_31.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "receipt_32.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "документ_33.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "doc_34.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "doc_35.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "договор_36.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "договор_37.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "contract_38.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "счет_39.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "договор_40.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "act_41.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "акт_42.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "акт_43.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "doc_44.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "чек_45.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "invoice_46.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "act_47.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "contract_48.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "invoice_49.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "contract_50.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "doc_51.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "act_52.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "receipt_53.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "договор_54.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "doc_55.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "акт_56.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "акт_57.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "doc_58.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "contract_59.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "invoice_60.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "чек_61.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "акт_62.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "документ_63.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "акт_64.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "акт_65.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "payment_66.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "contract_67.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "contract_68.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "акт_69.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "contract_70.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "чек_71.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "договор_72.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "receipt_73.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "документ_74.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "receipt_75.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "doc_76.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "receipt_77.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "invoice_78.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "contract_79.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "акт_80.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "contract_81.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "receipt_82.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "документ_83.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "contract_84.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "договор_85.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "payment_86.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "платеж_87.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "invoice_88.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "акт_89.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "чек_90.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "contract_91.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "bill_92.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "платеж_93.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "документ_94.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "акт_95.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "payment_96.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "платеж_97.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "contract_98.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "документ_99.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "invoice_100.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "doc_101.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "contract_102.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "act_103.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "акт_104.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "счет_105.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "bill_106.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "doc_107.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "payment_108.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "contract_109.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "invoice_110.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "платеж_111.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "doc_112.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "платеж_113.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "чек_114.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "contract_115.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "документ_116.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "act_117.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "документ_118.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "договор_119.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "contract_120.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "договор_121.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "договор_122.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "act_123.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "чек_124.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "документ_125.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "акт_126.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "чек_127.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "документ_128.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "receipt_129.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "receipt_130.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "договор_131.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "платеж_132.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "bill_133.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "act_134.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "счет_135.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "документ_136.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "act_137.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "платеж_138.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "doc_139.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "receipt_140.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "акт_141.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "платеж_142.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "счет_143.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "платеж_144.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "акт_145.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "receipt_146.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "invoice_147.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "договор_148.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "документ_149.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "bill_150.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "документ_151.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "act_152.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "act_153.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "invoice_154.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "договор_155.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "bill_156.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "документ_157.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "платеж_158.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "платеж_159.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "договор_160.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "doc_161.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "contract_162.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "contract_163.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "payment_164.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "чек_165.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "act_166.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "contract_167.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "счет_168.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "договор_169.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "документ_170.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "счет_171.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "contract_172.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "payment_173.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "doc_174.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "bill_175.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "чек_176.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "договор_177.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "договор_178.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "bill_179.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "платеж_180.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "receipt_181.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "чек_182.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "договор_183.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "акт_184.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "receipt_185.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "receipt_186.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "payment_187.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "receipt_188.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "акт_189.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "invoice_190.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "receipt_191.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "акт_192.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "договор_193.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "чек_194.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "платеж_195.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "чек_196.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "bill_197.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "invoice_198.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "receipt_199.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "doc_200.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "contract_201.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "receipt_202.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "счет_203.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "doc_204.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "invoice_205.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "акт_206.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "invoice_207.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "invoice_208.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "doc_209.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "act_210.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "contract_211.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "счет_212.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "doc_213.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "invoice_214.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "payment_215.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "payment_216.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "чек_217.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "invoice_218.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "чек_219.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "платеж_220.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "contract_221.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "payment_222.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "payment_223.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "bill_224.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "bill_225.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "receipt_226.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "contract_227.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "payment_228.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "doc_229.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "чек_230.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "contract_231.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "act_232.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "чек_233.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "акт_234.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "receipt_235.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "act_236.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "contract_237.pdf",
+    "classification": "contract"
+  },
+  {
+    "filename": "act_238.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "payment_239.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "акт_240.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "документ_241.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "payment_242.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "счет_243.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "act_244.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "акт_245.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "акт_246.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "документ_247.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "чек_248.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "договор_249.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "receipt_250.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "акт_251.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "receipt_252.pdf",
+    "classification": "receipt"
+  },
+  {
+    "filename": "документ_253.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "doc_254.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "акт_255.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "payment_256.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "invoice_257.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "акт_258.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "doc_259.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "doc_260.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "счет_261.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "чек_262.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "чек_263.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "invoice_264.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "акт_265.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "договор_266.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "документ_267.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "договор_268.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "документ_269.pdf",
+    "classification": "документ"
+  },
+  {
+    "filename": "акт_270.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "чек_271.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "invoice_272.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "договор_273.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "act_274.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "doc_275.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "invoice_276.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "doc_277.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "счет_278.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "doc_279.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "чек_280.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "платеж_281.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "чек_282.pdf",
+    "classification": "чек"
+  },
+  {
+    "filename": "payment_283.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "bill_284.pdf",
+    "classification": "bill"
+  },
+  {
+    "filename": "платеж_285.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "act_286.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "договор_287.pdf",
+    "classification": "договор"
+  },
+  {
+    "filename": "акт_288.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "платеж_289.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "payment_290.pdf",
+    "classification": "payment"
+  },
+  {
+    "filename": "счет_291.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "счет_292.pdf",
+    "classification": "счет"
+  },
+  {
+    "filename": "акт_293.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "акт_294.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "act_295.pdf",
+    "classification": "act"
+  },
+  {
+    "filename": "invoice_296.pdf",
+    "classification": "invoice"
+  },
+  {
+    "filename": "платеж_297.pdf",
+    "classification": "платеж"
+  },
+  {
+    "filename": "doc_298.pdf",
+    "classification": "doc"
+  },
+  {
+    "filename": "акт_299.pdf",
+    "classification": "акт"
+  },
+  {
+    "filename": "чек_300.pdf",
+    "classification": "чек"
+  }
+]

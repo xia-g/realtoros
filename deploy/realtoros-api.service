@@ -1,0 +1,22 @@
+[Unit]
+Description=Real Estate OS — Backend API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=xiag
+Group=xiag
+WorkingDirectory=/home/xiag/real-estate-os
+EnvironmentFile=/home/xiag/real-estate-os/.env
+Environment=PYTHONPATH=/home/xiag/real-estate-os:/home/xiag/real-estate-os/services/accounting_binding
+Environment=OCR_NODE_URL=http://127.0.0.1:8001/api/v1
+ExecStart=/home/xiag/real-estate-os/venv/bin/uvicorn backend.main:app --host 0.0.0.0 --port 8090 --workers 1 --log-level info
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

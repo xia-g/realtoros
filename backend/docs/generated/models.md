@@ -1,0 +1,4 @@
+# Generated Models
+
+| Class | File |
+|-------|------|
