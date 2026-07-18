@@ -18,6 +18,12 @@ node_modules/
 # IDE
 .vscode/
 .idea/
+
+# Large files
+ttbot.sql
+*.dump
+*.sql.gz
+temp_docs/
 *.swp
 *.swo
 
