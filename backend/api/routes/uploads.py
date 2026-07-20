@@ -20,7 +20,7 @@ import os
 import sys
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile, Request
 
 from backend.accounting.db.pool import get_pool
 
@@ -223,7 +223,7 @@ async def upload_document(
 
 
 @router.get("/job/{job_id}")
-async def get_upload_job(job_id: str):
+async def get_upload_job(job_id: str, request: Request = None):
     """Проверить статус OCR и получить результат.
 
     Неблокирующий: быстрый check, без ожидания.
@@ -575,15 +575,8 @@ async def get_upload_job(job_id: str):
                     from application.knowledge_persistence.integrator import (
                         KnowledgeRuntimeIntegrator,
                     )
-                    # Singleton stored on the module object — lives across requests
-                    import sys as _sys
-                    _mod = _sys.modules.get(__name__)
-                    if _mod is None or not hasattr(_mod, "_v21_integrator"):
-                        _integrator = KnowledgeRuntimeIntegrator()
-                        if _mod is not None:
-                            _mod._v21_integrator = _integrator
-                    else:
-                        _integrator = _mod._v21_integrator
+                    # Get integrator from app.state (bootstrapped in lifespan)
+                    _integrator = request.app.state.integrator
 
                     report = _integrator.integrate(
                         pipeline_result=pipeline_result,
