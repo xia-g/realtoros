@@ -92,8 +92,14 @@ class KnowledgeRuntimeIntegrator:
         revision_repository=None,
         projection_store=None,
     ) -> None:
-        self.revision_repository = revision_repository or MemoryKnowledgeRevisionRepository()
-        self.projection_store = projection_store or MemoryProjectionStore()
+        self.revision_repository = (
+            revision_repository if revision_repository is not None
+            else MemoryKnowledgeRevisionRepository()
+        )
+        self.projection_store = (
+            projection_store if projection_store is not None
+            else MemoryProjectionStore()
+        )
 
         self._registry = ProjectionRegistry()
         self._registry.register(MaterializedEntityBuilder())
@@ -134,6 +140,12 @@ class KnowledgeRuntimeIntegrator:
                     raw_explanation = revision.snapshot.explanation
             elif isinstance(raw_revision, dict):
                 # Dict path — from real DomainPipelineBridge.process()
+                from domain.business_relationship.knowledge_revision import KnowledgeRevision as KR
+                from domain.business_relationship.knowledge_revision_id import KnowledgeRevisionId as KRID
+                from domain.business_relationship.knowledge_revision_number import KnowledgeRevisionNumber as KRN
+                from domain.business_relationship.knowledge_revision_metadata import (
+                    KnowledgeRevisionMetadata as KRM,
+                )
                 revision_id = raw_revision.get("id", "")
                 revision_number = raw_revision.get("number", 0)
                 # Build a minimal KnowledgeRevision for the record
@@ -144,7 +156,7 @@ class KnowledgeRuntimeIntegrator:
                     revision_id=KRID(value=revision_id),
                     revision_number=KRN(number=revision_number),
                     snapshot=raw_revision.get("snapshot"),
-                    metadata={},
+                    metadata=KRM(),
                 )
                 raw_explanation = None
                 if revision.snapshot and revision.snapshot.explanation:
