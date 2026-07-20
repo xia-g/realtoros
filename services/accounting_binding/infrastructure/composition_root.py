@@ -14,6 +14,7 @@ from projection.projection_query_service import ProjectionQueryService
 from projection.projection_store import ProjectionStore
 
 from infrastructure.memory_store import MemoryProjectionStore
+from infrastructure.knowledge_persistence.postgresql_projection_store import PostgreSQLProjectionStore
 from infrastructure.memory_strategy import InMemoryExecutionStrategy
 from infrastructure.configuration import AdapterConfiguration, StoreType, StrategyType
 from infrastructure.exceptions import ConfigurationError
@@ -28,7 +29,9 @@ class ProjectionStoreFactory:
         if config.store_type == StoreType.MEMORY:
             return MemoryProjectionStore()
         elif config.store_type == StoreType.POSTGRESQL:
-            raise ConfigurationError("PostgreSQL store not implemented in v2.1")
+            if not config.connection_string:
+                raise ConfigurationError("PostgreSQL store requires connection_string in config")
+            return PostgreSQLProjectionStore(dsn=config.connection_string)
         elif config.store_type == StoreType.NEO4J:
             raise ConfigurationError("Neo4j store not implemented in v2.1")
         elif config.store_type == StoreType.ELASTIC:

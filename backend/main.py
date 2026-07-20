@@ -46,6 +46,33 @@ async def lifespan(app: FastAPI):
     register_sync_handlers(get_event_bus())
     logger.info("event_handlers_registered")
 
+    # ── Knowledge Runtime Bootstrap ────────────────────────────
+    try:
+        from infrastructure.knowledge_persistence.postgresql_knowledge_revision_repository import (
+            PostgreSQLKnowledgeRevisionRepository,
+        )
+        from infrastructure.knowledge_persistence.postgresql_projection_store import (
+            PostgreSQLProjectionStore,
+        )
+        from application.knowledge_persistence.integrator import (
+            KnowledgeRuntimeIntegrator,
+        )
+
+        dsn = settings.DATABASE_SYNC_URL
+        revision_repository = PostgreSQLKnowledgeRevisionRepository(dsn=dsn)
+        projection_store = PostgreSQLProjectionStore(dsn=dsn)
+        app.state.integrator = KnowledgeRuntimeIntegrator(
+            revision_repository=revision_repository,
+            projection_store=projection_store,
+        )
+        logger.info(
+            "knowledge_runtime_bootstrapped dsn=%s",
+            dsn.replace(dsn[dsn.find(":")+1:dsn.rfind("@")], "***") if "@" in dsn else dsn,
+        )
+    except Exception as e:
+        logger.warning("knowledge_runtime_bootstrap_failed", error=str(e))
+        app.state.integrator = None
+
     # Run startup health check
     try:
         from backend.scripts.validate_architecture import startup_health_check
