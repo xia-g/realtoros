@@ -1,14 +1,16 @@
 """Database connection for the accounting module.
 
 Uses direct asyncpg (not SQLAlchemy) per project pattern.
+DSN sourced exclusively from backend.config.settings.DATABASE_URL.
 """
+from __future__ import annotations
 
-import os
 from functools import lru_cache
 
-DSN = os.getenv("DATABASE_URL", "postgresql+asyncpg://realtoros:realtoros15pass@127.0.0.1:5432/realtoros").replace("+asyncpg", "")
+from backend.config import settings
 
 
 @lru_cache(maxsize=1)
 def get_dsn() -> str:
-    return DSN
+    """Return the sync DSN (asyncpg prefix removed)."""
+    return settings.DATABASE_URL.replace("+asyncpg", "")

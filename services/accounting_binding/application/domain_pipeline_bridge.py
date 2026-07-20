@@ -339,6 +339,7 @@ class DomainPipelineBridge:
             "revision": {
                 "id": revision.revision_id.value,
                 "number": revision.revision_number.number,
+                "snapshot": revision.snapshot,
             },
             "pipeline_status": "completed",
         }
