@@ -74,18 +74,26 @@ class KnowledgeRuntimeReport:
 class KnowledgeRuntimeIntegrator:
     """Application-level orchestrator for knowledge runtime.
 
+    Receives already-created dependencies via DI.
+    Knows only KnowledgeRevisionRepository and ProjectionStore protocols.
+    No knowledge of PostgreSQL, Memory, or any concrete implementation.
+
     Shared instances:
-      - revision_repository: MemoryKnowledgeRevisionRepository
-      - projection_store: MemoryProjectionStore
+      - revision_repository: KnowledgeRevisionRepository
+      - projection_store: ProjectionStore
       - projection_registry: ProjectionRegistry
       - build_plan: BuildPlan
 
     Single-threaded. Not thread-safe.
     """
 
-    def __init__(self) -> None:
-        self.revision_repository = MemoryKnowledgeRevisionRepository()
-        self.projection_store = MemoryProjectionStore()
+    def __init__(
+        self,
+        revision_repository=None,
+        projection_store=None,
+    ) -> None:
+        self.revision_repository = revision_repository or MemoryKnowledgeRevisionRepository()
+        self.projection_store = projection_store or MemoryProjectionStore()
 
         self._registry = ProjectionRegistry()
         self._registry.register(MaterializedEntityBuilder())
