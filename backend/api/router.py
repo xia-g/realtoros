@@ -12,6 +12,7 @@ from backend.api.routes.documents import router as documents_router
 from backend.api.routes.notifications import router as notifications_router
 from backend.api.routes.system_jobs import router as system_jobs_router
 from backend.api.routes.knowledge import router as knowledge_router
+from backend.api.routes.knowledge_explorer import router as explorer_router
 from backend.api.routes.knowledge_sessions import router as sessions_router
 from backend.api.routes.platform_settings import router as platform_router
 from backend.api.routes.auth import router as auth_router
@@ -39,6 +40,7 @@ api_router.include_router(documents_router, prefix="/documents", tags=["Document
 api_router.include_router(notifications_router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(system_jobs_router, prefix="/jobs", tags=["System Jobs"])
 api_router.include_router(knowledge_router, prefix="/knowledge", tags=["Knowledge"])
+api_router.include_router(explorer_router, tags=["Knowledge Explorer"])
 api_router.include_router(sessions_router, prefix="/agent/sessions", tags=["Knowledge Sessions"])
 api_router.include_router(platform_router, prefix="/platform", tags=["Platform"])
 api_router.include_router(auth_router, prefix="/auth", tags=["Auth"])
