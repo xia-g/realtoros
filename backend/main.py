@@ -50,27 +50,33 @@ async def lifespan(app: FastAPI):
     publisher = None
     try:
         from backend.infrastructure.event_publisher import EventPublisher
+        from backend.infrastructure.consumers.graph_sync_consumer import GraphSyncConsumer
+
         publisher = EventPublisher(
             dsn=settings.DATABASE_SYNC_URL,
             poll_interval=1.0,
             batch_size=50,
         )
-        # Register GraphSync consumer (migrated to IntegrationEvent)
-        from backend.core.event_handlers import graph_sync_consumer
-        publisher.register_consumer("document.ready", graph_sync_consumer)
-        publisher.register_consumer("document.created", graph_sync_consumer)
-        publisher.register_consumer("document.deleted", graph_sync_consumer)
-        publisher.register_consumer("client.created", graph_sync_consumer)
-        publisher.register_consumer("client.updated", graph_sync_consumer)
-        publisher.register_consumer("client.deleted", graph_sync_consumer)
-        publisher.register_consumer("property.created", graph_sync_consumer)
-        publisher.register_consumer("property.updated", graph_sync_consumer)
-        publisher.register_consumer("property.deleted", graph_sync_consumer)
-        publisher.register_consumer("deal.created", graph_sync_consumer)
-        publisher.register_consumer("deal.updated", graph_sync_consumer)
-        publisher.register_consumer("deal.deleted", graph_sync_consumer)
-        publisher.register_consumer("lead.converted", graph_sync_consumer)
-        publisher.register_consumer("lead.merged", graph_sync_consumer)
+        # Register GraphSync class-based consumer (with dedup via BaseConsumer)
+        graph_sync = GraphSyncConsumer(dsn=settings.DATABASE_SYNC_URL)
+        EVENT_TYPES = [
+            "document.ready",
+            "document.created",
+            "document.deleted",
+            "client.created",
+            "client.updated",
+            "client.deleted",
+            "property.created",
+            "property.updated",
+            "property.deleted",
+            "deal.created",
+            "deal.updated",
+            "deal.deleted",
+            "lead.converted",
+            "lead.merged",
+        ]
+        for et in EVENT_TYPES:
+            publisher.register_consumer(et, graph_sync.consume)
         app.state.event_publisher = publisher
         app.state.publisher_task = asyncio.create_task(publisher.start())
         logger.info("event_publisher_started")

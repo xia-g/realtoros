@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 import json
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch, PropertyMock, ANY
+from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock, ANY
 from uuid import UUID, uuid4
 
 import pytest
@@ -812,3 +812,316 @@ class TestRegistryFix:
             ensure_event_registry()
             ensure_event_registry()
             mock.assert_called_once()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 9. GraphSyncConsumer Tests
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestGraphSyncConsumer:
+    """GraphSyncConsumer — dedup, event processing, publisher integration."""
+
+    @pytest.fixture
+    def consumer(self):
+        from backend.infrastructure.consumers.graph_sync_consumer import GraphSyncConsumer
+        return GraphSyncConsumer(dsn="postgresql://test:***@localhost/test")
+
+    @pytest.fixture
+    def sample_event(self):
+        return IntegrationEvent(
+            event_id=uuid4(),
+            event_type="document.ready",
+            aggregate_type="Document",
+            aggregate_id="doc-001",
+            occurred_at=datetime.now(timezone.utc),
+            payload={"status": "READY", "document_id": "doc-001"},
+            metadata={"schema_version": 1, "producer": "test"},
+        )
+
+    @pytest.mark.asyncio
+    async def test_1_consumer_processes_event(self, consumer, sample_event):
+        """GraphSyncConsumer processes an IntegrationEvent successfully."""
+        with patch.object(consumer._state_repo, "is_processed", return_value=False):
+            with patch.object(consumer._state_repo, "mark_processed") as mock_mark:
+                with patch(
+                    "backend.services.graph_lifecycle_service.GraphLifecycleService"
+                ) as mock_svc_cls:
+                    mock_svc = MagicMock()
+                    mock_svc.sync_entity = AsyncMock()
+                    mock_svc_cls.return_value = mock_svc
+
+                    result = await consumer.consume(sample_event)
+
+                    assert result.success
+                    mock_svc.sync_entity.assert_called_once()
+                    call_kwargs = mock_svc.sync_entity.call_args
+                    # sync_entity is called with keyword args: entity_type, entity_id, title
+                    kwargs = call_kwargs[1] if len(call_kwargs) > 1 else {}
+                    assert kwargs.get("entity_type") == "Document"
+                    assert kwargs.get("entity_id") == "doc-001"
+                    assert kwargs.get("title") == "document"
+                    mock_mark.assert_called_once_with(
+                        "graph_sync", sample_event.event_id
+                    )
+
+    @pytest.mark.asyncio
+    async def test_2_consumer_handles_partial_payload(self, consumer):
+        """IntegrationEvent with minimum payload does not break consumer."""
+        minimal_event = IntegrationEvent(
+            event_id=uuid4(),
+            event_type="client.created",
+            aggregate_type="Client",
+            aggregate_id="client-999",
+            occurred_at=datetime.now(timezone.utc),
+        )
+        with patch.object(consumer._state_repo, "is_processed", return_value=False):
+            with patch.object(consumer._state_repo, "mark_processed"):
+                with patch(
+                    "backend.services.graph_lifecycle_service.GraphLifecycleService"
+                ) as mock_svc_cls:
+                    mock_svc = MagicMock()
+                    mock_svc.sync_entity = AsyncMock()
+                    mock_svc_cls.return_value = mock_svc
+
+                    result = await consumer.consume(minimal_event)
+
+                    assert result.success
+                    mock_svc.sync_entity.assert_called_once()
+                    call_kwargs = mock_svc.sync_entity.call_args
+                    kwargs = call_kwargs[1] if len(call_kwargs) > 1 else {}
+                    assert kwargs.get("entity_type") == "Client"
+                    assert kwargs.get("entity_id") == "client-999"
+                    assert kwargs.get("title") == "client"
+
+    @pytest.mark.asyncio
+    async def test_3_dedup_skips_duplicate(self, consumer, sample_event):
+        """Same event_id twice → processed only once."""
+        with patch.object(consumer._state_repo, "is_processed", return_value=True):
+            with patch.object(consumer._state_repo, "mark_processed") as mock_mark:
+                with patch(
+                    "backend.services.graph_lifecycle_service.GraphLifecycleService"
+                ) as mock_svc_cls:
+                    result = await consumer.consume(sample_event)
+
+                    assert result.success
+                    mock_svc_cls.assert_not_called()
+                    mock_mark.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_4_consumer_error_leads_to_retry(self, consumer, sample_event):
+        """Exception during _process → ConsumerResult(success=False, retryable=True)."""
+        with patch.object(consumer._state_repo, "is_processed", return_value=False):
+            with patch.object(consumer._state_repo, "mark_processed") as mock_mark:
+                with patch(
+                    "backend.services.graph_lifecycle_service.GraphLifecycleService"
+                ) as mock_svc_cls:
+                    mock_svc = MagicMock()
+                    mock_svc.sync_entity.side_effect = ValueError("Graph sync failed")
+                    mock_svc_cls.return_value = mock_svc
+
+                    result = await consumer.consume(sample_event)
+
+                    assert not result.success
+                    assert result.retryable
+                    assert "Graph sync failed" in (result.error or "")
+                    mock_mark.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_5_consumer_name_is_graph_sync(self, consumer):
+        """Consumer name is 'graph_sync' — used for dedup key."""
+        assert consumer._consumer_name == "graph_sync"
+
+    @pytest.mark.asyncio
+    async def test_6_dedup_prevents_double_processing(self, consumer, sample_event):
+        """Dedup check happens before _process — duplicate event skips processing."""
+        call_count = [0]
+
+        with patch.object(consumer._state_repo, "is_processed", return_value=True):
+            with patch.object(consumer._state_repo, "mark_processed") as mock_mark:
+                with patch(
+                    "backend.services.graph_lifecycle_service.GraphLifecycleService"
+                ) as mock_svc_cls:
+                    result1 = await consumer.consume(sample_event)
+                    result2 = await consumer.consume(sample_event)
+
+                    assert result1.success
+                    assert result2.success
+                    mock_svc_cls.assert_not_called()
+                    mock_mark.assert_not_called()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 10. Publisher + GraphSyncConsumer Integration Tests
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestPublisherGraphSyncIntegration:
+    """Publisher with GraphSyncConsumer registered — end-to-end."""
+
+    @pytest.fixture
+    def publisher(self):
+        return EventPublisher(
+            dsn="postgresql://test:***@localhost/test",
+            poll_interval=60,
+            batch_size=10,
+        )
+
+    @pytest.fixture
+    def graph_sync_consumer(self):
+        from backend.infrastructure.consumers.graph_sync_consumer import GraphSyncConsumer
+        c = GraphSyncConsumer(dsn="postgresql://test:***@localhost/test")
+        # Mock state repo to avoid real DB
+        c._state_repo = MagicMock()
+        c._state_repo.is_processed.return_value = False
+        return c
+
+    @pytest.mark.asyncio
+    async def test_1_event_delivered_to_consumer(self, publisher, graph_sync_consumer):
+        """Publisher delivers IntegrationEvent to GraphSyncConsumer."""
+        # Register the consumer with the publisher
+        publisher.register_consumer("document.ready", graph_sync_consumer.consume)
+
+        event_id = uuid4()
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=[
+            {
+                "id": event_id,
+                "event_type": "document.ready",
+                "aggregate_type": "Document",
+                "aggregate_id": "doc-001",
+                "payload": {
+                    "event_id": str(event_id),
+                    "event_type": "document.ready",
+                    "aggregate_type": "Document",
+                    "aggregate_id": "doc-001",
+                    "occurred_at": datetime.now(timezone.utc).isoformat(),
+                    "version": 1,
+                    "payload": {"status": "READY"},
+                    "metadata": {},
+                },
+                "metadata": {},
+                "created_at": datetime.now(timezone.utc),
+                "published_at": None,
+                "attempts": 0,
+                "last_error": None,
+                "status": "pending",
+            },
+        ])
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+        publisher._outbox_repo.mark_failed = MagicMock()
+
+        with patch(
+            "backend.services.graph_lifecycle_service.GraphLifecycleService"
+        ) as mock_svc_cls:
+            mock_svc = MagicMock()
+            mock_svc.sync_entity = AsyncMock()
+            mock_svc_cls.return_value = mock_svc
+
+            await publisher._poll_once()
+
+            # Verify consumer was called
+            assert graph_sync_consumer._state_repo.is_processed.called
+            mock_svc.sync_entity.assert_called_once()
+            publisher._outbox_repo.mark_published.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_2_no_double_delivery_after_mark_published(
+        self, publisher, graph_sync_consumer
+    ):
+        """After successful delivery, event is not picked up again."""
+        publisher.register_consumer("document.ready", graph_sync_consumer.consume)
+
+        # First poll — event delivered
+        event_id = uuid4()
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=[
+            {
+                "id": event_id,
+                "event_type": "document.ready",
+                "aggregate_type": "Document",
+                "aggregate_id": "doc-001",
+                "payload": {
+                    "event_id": str(event_id),
+                    "event_type": "document.ready",
+                    "aggregate_type": "Document",
+                    "aggregate_id": "doc-001",
+                    "occurred_at": datetime.now(timezone.utc).isoformat(),
+                    "version": 1,
+                    "payload": {},
+                    "metadata": {},
+                },
+                "metadata": {},
+                "created_at": datetime.now(timezone.utc),
+                "published_at": None,
+                "attempts": 0,
+                "last_error": None,
+                "status": "pending",
+            },
+        ])
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+        publisher._outbox_repo.mark_failed = MagicMock()
+
+        with patch(
+            "backend.services.graph_lifecycle_service.GraphLifecycleService"
+        ) as mock_svc_cls:
+            mock_svc = MagicMock()
+            mock_svc_cls.return_value = mock_svc
+
+            await publisher._poll_once()
+            first_call_count = mock_svc.sync_entity.call_count
+
+            # Second poll — no pending events
+            publisher._outbox_repo.fetch_pending = MagicMock(return_value=[])
+            await publisher._poll_once()
+
+        # Consumer called exactly once
+        assert first_call_count == 1
+        assert mock_svc.sync_entity.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_3_consumer_failure_marks_failed(
+        self, publisher, graph_sync_consumer
+    ):
+        """Consumer failure → outbox row marked as failed."""
+        publisher.register_consumer("document.ready", graph_sync_consumer.consume)
+
+        event_id = uuid4()
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=[
+            {
+                "id": event_id,
+                "event_type": "document.ready",
+                "aggregate_type": "Document",
+                "aggregate_id": "doc-001",
+                "payload": {
+                    "event_id": str(event_id),
+                    "event_type": "document.ready",
+                    "aggregate_type": "Document",
+                    "aggregate_id": "doc-001",
+                    "occurred_at": datetime.now(timezone.utc).isoformat(),
+                    "version": 1,
+                    "payload": {},
+                    "metadata": {},
+                },
+                "metadata": {},
+                "created_at": datetime.now(timezone.utc),
+                "published_at": None,
+                "attempts": 0,
+                "last_error": None,
+                "status": "pending",
+            },
+        ])
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+        publisher._outbox_repo.mark_failed = MagicMock()
+
+        with patch(
+            "backend.services.graph_lifecycle_service.GraphLifecycleService"
+        ) as mock_svc_cls:
+            mock_svc = MagicMock()
+            mock_svc.sync_entity.side_effect = ValueError("Graph sync failed")
+            mock_svc_cls.return_value = mock_svc
+
+            await publisher._poll_once()
+            publisher._outbox_repo.mark_failed.assert_called_once()
+            publisher._outbox_repo.mark_published.assert_not_called()
