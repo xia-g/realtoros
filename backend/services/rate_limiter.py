@@ -153,3 +153,7 @@ class MinuteWindowRateLimiter:
             return False
         self._minute_windows[user_id].append(now)
         return True
+
+
+# Backward-compatible alias
+RateLimiter = PostgresRateLimiter

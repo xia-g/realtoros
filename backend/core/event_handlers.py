@@ -1,77 +1,15 @@
-"""Event sync handlers — синхронизация CRM -> Graph / Embeddings / Search.
+"""Event sync handlers — синхронизация CRM -> Embeddings / Search / Audit.
 
-Подключаются к DomainEventBus и обновляют Knowledge Graph при изменениях CRM.
-Версия 3: Stream 3 — IntegrationEvent consumer for GraphSync.
+Подключаются к DomainEventBus.
+Версия 4: Legacy graph_sync_handler removed — migrated to Event Backbone.
 """
 from __future__ import annotations
 
 from structlog import get_logger
 
 from backend.core.domain_events import DomainEvent
-from backend.core.integration_event import IntegrationEvent
-from backend.infrastructure.consumer_base import ConsumerResult
 
 logger = get_logger(__name__)
-
-
-async def graph_sync_handler(event: DomainEvent) -> None:
-    """Синхронизировать GraphNode при изменении CRM-сущности.
-
-    DomainEventBus handler (in-memory, for backward compatibility).
-    Will be fully replaced by graph_sync_consumer after Stream 3 migration.
-    """
-    try:
-        from backend.services.graph_lifecycle_service import GraphLifecycleService
-        svc = GraphLifecycleService()
-        await svc.sync_entity(
-            entity_type=event.entity_type,
-            entity_id=event.entity_id,
-            source=event.event_type.split(".")[0],
-        )
-        logger.info(
-            "graph_sync_completed",
-            event_type=event.event_type,
-            entity_id=str(event.entity_id),
-        )
-    except Exception as e:
-        logger.error(
-            "graph_sync_failed",
-            event_type=event.event_type,
-            entity_id=str(event.entity_id),
-            error=str(e),
-        )
-
-
-async def graph_sync_consumer(event: IntegrationEvent) -> ConsumerResult:
-    """GraphSync consumer for IntegrationEvent (Stream 3).
-
-    Called by EventPublisher when a new event is delivered.
-    Idempotent: dedup handled by BaseConsumer / ConsumerStateRepository.
-    """
-    try:
-        from backend.services.graph_lifecycle_service import GraphLifecycleService
-        svc = GraphLifecycleService()
-        await svc.sync_entity(
-            entity_type=event.aggregate_type,
-            entity_id=event.aggregate_id,
-            source=event.event_type.split(".")[0],
-        )
-        logger.info(
-            "graph_sync_consumer_completed",
-            event_id=str(event.event_id),
-            event_type=event.event_type,
-            aggregate_id=event.aggregate_id,
-        )
-        return ConsumerResult(success=True)
-    except Exception as e:
-        logger.error(
-            "graph_sync_consumer_failed",
-            event_id=str(event.event_id),
-            event_type=event.event_type,
-            aggregate_id=event.aggregate_id,
-            error=str(e),
-        )
-        return ConsumerResult(success=False, error=str(e), retryable=True)
 
 
 async def embedding_sync_handler(event: DomainEvent) -> None:
@@ -122,29 +60,27 @@ def register_sync_handlers(event_bus) -> None:
     )
 
     handlers = {
-        EVENT_CLIENT_CREATED: [graph_sync_handler, audit_handler],
-        EVENT_CLIENT_UPDATED: [graph_sync_handler, audit_handler],
-        EVENT_CLIENT_DELETED: [graph_sync_handler, audit_handler],
-        EVENT_PROPERTY_CREATED: [graph_sync_handler, audit_handler],
-        EVENT_PROPERTY_UPDATED: [graph_sync_handler, audit_handler],
-        EVENT_PROPERTY_DELETED: [graph_sync_handler, audit_handler],
-        EVENT_DEAL_CREATED: [graph_sync_handler, audit_handler],
-        EVENT_DEAL_UPDATED: [graph_sync_handler, audit_handler],
-        EVENT_DEAL_DELETED: [graph_sync_handler, audit_handler],
+        EVENT_CLIENT_CREATED: [audit_handler],
+        EVENT_CLIENT_UPDATED: [audit_handler],
+        EVENT_CLIENT_DELETED: [audit_handler],
+        EVENT_PROPERTY_CREATED: [audit_handler],
+        EVENT_PROPERTY_UPDATED: [audit_handler],
+        EVENT_PROPERTY_DELETED: [audit_handler],
+        EVENT_DEAL_CREATED: [audit_handler],
+        EVENT_DEAL_UPDATED: [audit_handler],
+        EVENT_DEAL_DELETED: [audit_handler],
         EVENT_DOCUMENT_CREATED: [
-            graph_sync_handler,
             embedding_sync_handler,
             search_index_handler,
             audit_handler,
         ],
         EVENT_DOCUMENT_DELETED: [
-            graph_sync_handler,
             embedding_sync_handler,
             search_index_handler,
             audit_handler,
         ],
-        EVENT_LEAD_CONVERTED: [graph_sync_handler, audit_handler],
-        EVENT_LEAD_MERGED: [graph_sync_handler, audit_handler],
+        EVENT_LEAD_CONVERTED: [audit_handler],
+        EVENT_LEAD_MERGED: [audit_handler],
     }
 
     event_bus.register_all(handlers)

@@ -1,3 +1,1 @@
-"""Pytest configuration for unit tests."""
-
-pytest_plugins = ("pytest_asyncio",)
+"""Pytest configuration for unit tests — empty, pytest_plugins moved to root conftest.py."""

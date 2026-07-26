@@ -750,7 +750,13 @@ class TestEventPublisher:
 
 
 class TestDeterministicReplay:
-    """Replay — same events -> same result."""
+    """Replay — same events -> same result.
+
+    Tests cover three replay scenarios (P3/P4):
+    - replay single event → processed exactly once
+    - replay duplicate  → consumer_state prevents double processing
+    - determinism      → A+B+C same state regardless of processing order
+    """
 
     @pytest.fixture
     def events(self):
@@ -782,6 +788,100 @@ class TestDeterministicReplay:
         state1 = replay(events)
         state2 = replay(events)
         assert state1 == state2
+
+    # ── Replay verification (P3/P4) ──────────────────────────────────────
+
+    @pytest.mark.asyncio
+    async def test_replay_single_event(self):
+        """Replay single event — processed exactly once."""
+        consumer = MockConsumer("replay-single-test")
+        event = IntegrationEvent(
+            event_id=uuid4(),
+            event_type="test.replay.single",
+            aggregate_type="Document",
+            aggregate_id="doc-001",
+            occurred_at=datetime.now(timezone.utc),
+        )
+
+        # First: fresh event → processed once
+        with patch.object(consumer._state_repo, "is_processed", return_value=False):
+            with patch.object(consumer._state_repo, "mark_processed"):
+                result = await consumer.consume(event)
+                assert result.success
+                assert len(consumer.processed_events) == 1
+
+        # Replay: same event again → consumer_state prevents duplicate
+        with patch.object(consumer._state_repo, "is_processed", return_value=True):
+            with patch.object(consumer._state_repo, "mark_processed") as mock_mark:
+                result = await consumer.consume(event)
+                assert result.success  # still success (idempotent)
+                assert len(consumer.processed_events) == 1  # still 1 — not duplicated
+                mock_mark.assert_not_called()  # not marked again
+
+    @pytest.mark.asyncio
+    async def test_replay_duplicate_prevented(self):
+        """consumer_state prevents duplicate processing on replay."""
+        consumer = MockConsumer("replay-dup-test")
+
+        # Event that was already processed (e.g. carried over from a prior run)
+        event = IntegrationEvent(
+            event_id=uuid4(),
+            event_type="test.replay.duplicate",
+            aggregate_type="Document",
+            aggregate_id="doc-001",
+            occurred_at=datetime.now(timezone.utc),
+        )
+
+        # consumer_state says already processed → skip _process entirely
+        with patch.object(consumer._state_repo, "is_processed", return_value=True):
+            with patch.object(consumer._state_repo, "mark_processed") as mock_mark:
+                result = await consumer.consume(event)
+                assert result.success  # no error — idempotent
+                assert len(consumer.processed_events) == 0  # not double-processed
+                mock_mark.assert_not_called()  # no new marker written
+
+    @pytest.mark.asyncio
+    async def test_replay_deterministic_ordering(self):
+        """A+B+C produces same final state regardless of processing order.
+
+        Determinism guarantee: replaying the same set of events in any order
+        produces the same set of processed event_ids. ConsumerStateRepository
+        ensures each event_id is marked at most once, and the framework
+        always delivers every event at least once — so the final effect is
+        always the same set of processed event_ids regardless of delivery order.
+        """
+        # Same 3 events used across all orderings
+        events = [
+            IntegrationEvent(
+                event_id=uuid4(),
+                event_type="test.replay.deterministic",
+                aggregate_type="Document",
+                aggregate_id="doc-001",
+                occurred_at=datetime.now(timezone.utc),
+                payload={"idx": i},
+            )
+            for i in range(3)
+        ]
+
+        states: list[frozenset] = []
+
+        for order in [[0, 1, 2], [2, 1, 0], [1, 0, 2]]:
+            consumer = MockConsumer(f"replay-order-{'-'.join(str(x) for x in order)}")
+
+            # Process events in the specified order, all fresh
+            with patch.object(consumer._state_repo, "is_processed", return_value=False):
+                with patch.object(consumer._state_repo, "mark_processed"):
+                    for idx in order:
+                        result = await consumer.consume(events[idx])
+                        assert result.success
+
+            # The set of processed event_ids must be the same regardless of order
+            states.append(frozenset(e.event_id for e in consumer.processed_events))
+
+        assert states[0] == states[1] == states[2], (
+            f"Determinism violated — different processing orders produced "
+            f"different final states: {states}"
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════
