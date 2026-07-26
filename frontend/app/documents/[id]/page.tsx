@@ -59,6 +59,13 @@ export default function DocumentProfilePage() {
   })
   const doc = docData as any
 
+  // Fetch document lifecycle status from document_intake table
+  const { data: lifecycleStatus } = useQuery({
+    queryKey: ['document-lifecycle', docId],
+    queryFn: () => api.get(endpoints.documentStatus(docId)).catch(() => null),
+    retry: 1,
+  })
+
   if (isLoading) return (
     <div className="flex h-screen"><Sidebar /><main className="flex-1 p-6"><div className="animate-pulse space-y-4"><div className="h-8 bg-gray-200 rounded w-64"/><div className="h-40 bg-gray-100 rounded"/><div className="h-40 bg-gray-100 rounded"/></div></main></div>
   )
@@ -119,6 +126,23 @@ export default function DocumentProfilePage() {
                 <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                   {doc.status === 'ANALYZED' ? '✅ Проанализирован' : doc.status}
                 </span>
+                {lifecycleStatus && (
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    lifecycleStatus.status === 'READY' ? 'bg-blue-100 text-blue-700' :
+                    lifecycleStatus.status === 'ANALYZED' ? 'bg-purple-100 text-purple-700' :
+                    lifecycleStatus.status === 'PROCESSING' ? 'bg-yellow-100 text-yellow-700' :
+                    lifecycleStatus.status === 'ROUTED' ? 'bg-indigo-100 text-indigo-700' :
+                    lifecycleStatus.status === 'ARCHIVED' ? 'bg-gray-100 text-gray-700' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    Lifecycle: {lifecycleStatus.status}
+                    {lifecycleStatus.allowed_transitions?.length > 0 && (
+                      <span className="ml-1 text-[10px] opacity-70">
+                        → {lifecycleStatus.allowed_transitions.join(', ')}
+                      </span>
+                    )}
+                  </span>
+                )}
                 <span className="text-gray-400">
                   Уверенность классификации: {pct(doc.profile?.classification_confidence || profile.confidence)}
                 </span>

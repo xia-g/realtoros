@@ -114,9 +114,24 @@ export default function DocumentsImportPage() {
       const ocrResult = await pollJob(jobId)
       setResult(ocrResult)
 
-      // Step 3: Analyze document (brief local processing)
+      // Step 3: Integrate with document lifecycle (Epic 3)
       setStep('analyze')
       await new Promise(r => setTimeout(r, 600)) // brief visual pause
+
+      // 3a: Ensure lifecycle record exists in document_intake table
+      const lifecycleDocId = await ensureLifecycleRecord(jobId)
+
+      // 3b: Walk lifecycle transitions UPLOADED → VALIDATED → ACCEPTED
+      if (lifecycleDocId) {
+        await walkLifecycleTransitions(lifecycleDocId, ['VALIDATED', 'ACCEPTED'])
+        // 3c: Start processing pipeline (replaces client-side analyzeDocument)
+        const pipelineResult = await startDocumentPipeline(lifecycleDocId)
+        if (pipelineResult) {
+          console.log('Pipeline completed:', pipelineResult.status)
+        }
+      }
+
+      // 3d: Build analysis context from OCR result (still needed for deal UI)
       const dealAnalysis = await analyzeDocument(
         ocrResult.classification || 'unknown',
         ocrResult.extracted_fields?.amounts || [],
@@ -288,6 +303,105 @@ export default function DocumentsImportPage() {
     return labels[t] || t
   }
 
+  // ── LIFECYCLE INTEGRATION (Epic 3) ──
+
+  /** Ensure the document exists in the lifecycle document_intake table.
+   *  After OCR completes (job_id known), create a lifecycle record if missing,
+   *  then walk transitions through to ACCEPTED so the processing pipeline can start.
+   */
+  const ensureLifecycleRecord = async (jobId: string): Promise<string | null> => {
+    try {
+      // Check if doc already exists in lifecycle table
+      const checkResp = await fetch(`${API_URL}/api/v1/documents/${jobId}`)
+      if (checkResp.ok) {
+        const existing = await checkResp.json()
+        return existing.document_id || jobId
+      }
+      // Create lifecycle record by re-uploading the file to the documents API
+      if (!file) return null
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('organization_id', companyId)
+      const resp = await fetch(`${API_URL}/api/v1/documents/upload`, {
+        method: 'POST',
+        body: fd,
+      })
+      if (!resp.ok) {
+        const errText = await resp.text()
+        console.warn('Lifecycle upload failed:', errText)
+        return null
+      }
+      const data = await resp.json()
+      return data.document_id
+    } catch (e) {
+      console.warn('ensureLifecycleRecord failed:', e)
+      return null
+    }
+  }
+
+  /** Walk a lifecycle document through the specified transition states.
+   *  The lifecycle: UPLOADED → VALIDATED → ACCEPTED → PROCESSING → ANALYZED
+   *  Silently skips transitions that fail (non-critical for import flow).
+   */
+  const walkLifecycleTransitions = async (docId: string, states: string[]): Promise<void> => {
+    for (const targetStatus of states) {
+      try {
+        const resp = await fetch(`${API_URL}/api/v1/documents/${docId}/transition`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_status: targetStatus }),
+        })
+        if (!resp.ok) {
+          const errText = await resp.text()
+          console.warn(`Transition ${targetStatus} skipped:`, errText)
+        }
+      } catch (e) {
+        console.warn(`Transition ${targetStatus} failed:`, e)
+      }
+    }
+  }
+
+  /** Mark a lifecycle document as READY — triggers document.ready event.
+   *  Call this AFTER promote-to-deal or bind-to-deal succeeds.
+   */
+  const markDocumentReady = async (documentId: string): Promise<boolean> => {
+    try {
+      const resp = await fetch(`${API_URL}/api/v1/documents/${documentId}/mark-ready`, {
+        method: 'POST',
+      })
+      if (!resp.ok) {
+        const errText = await resp.text()
+        console.warn('mark-ready failed:', errText)
+        return false
+      }
+      return true
+    } catch (e) {
+      console.warn('mark-ready error:', e)
+      return false
+    }
+  }
+
+  /** Start the document processing pipeline (replaces client-side analyzeDocument).
+   *  Pipeline handles: OCR → Classification → Extraction → Knowledge.
+   *  Document must be in ACCEPTED status.
+   */
+  const startDocumentPipeline = async (documentId: string): Promise<any | null> => {
+    try {
+      const resp = await fetch(`${API_URL}/api/v1/processing/pipelines/start/${documentId}`, {
+        method: 'POST',
+      })
+      if (!resp.ok) {
+        const errText = await resp.text()
+        console.warn('Pipeline start failed:', errText)
+        return null
+      }
+      return await resp.json()
+    } catch (e) {
+      console.warn('Pipeline start error:', e)
+      return null
+    }
+  }
+
   // ── NAVIGATION ──
 
   const goToDeal = async () => {
@@ -316,10 +430,15 @@ export default function DocumentsImportPage() {
         return
       }
 
+      // ── Collect document ID for lifecycle operations ──
+      const lifecycleDocId = result?.job_id || deal.document_id || ''
+
       if (deal.status === 'existing' || deal.status === 'already_bound') {
         toast.info(isBind ? 'Документ уже привязан к сделке' : 'Сделка уже существует')
         setStep('deal_created')
         setDealResult(deal)
+        // Call mark-ready to emit document.ready for the lifecycle
+        if (lifecycleDocId) markDocumentReady(lifecycleDocId).catch(() => {})
         return
       }
 
@@ -329,6 +448,8 @@ export default function DocumentsImportPage() {
         setDealResult(deal)
         setPendingDeal(null)
         pendingDealRef.current = null
+        // Call mark-ready to emit document.ready for the lifecycle
+        if (lifecycleDocId) markDocumentReady(lifecycleDocId).catch(() => {})
         if (deal.requirement_matched) {
           toast.success(`✅ Документ привязан к сделке: ${deal.requirement_label}`)
         } else {
@@ -341,6 +462,8 @@ export default function DocumentsImportPage() {
       setStep('deal_created')
       setDealResult(deal)
       setPendingDeal(null)
+      // Call mark-ready to emit document.ready for the lifecycle
+      if (lifecycleDocId) markDocumentReady(lifecycleDocId).catch(() => {})
       setAnalysis((prev: any) => ({
         ...prev,
         dealId: deal.deal_id,

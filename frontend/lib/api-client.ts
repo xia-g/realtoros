@@ -72,6 +72,12 @@ export const endpoints = {
   documents: '/api/v1/documents',
   document: (id: string) => `/api/v1/documents/${id}`,
   documentValidate: (id: string) => `/api/v1/documents/${id}/validate`,
+  documentStatus: (id: string) => `/api/v1/documents/${id}/status`,
+  documentTransition: (id: string) => `/api/v1/documents/${id}/transition`,
+  markReady: (id: string) => `/api/v1/documents/${id}/mark-ready`,
+  promoteToDeal: (id: string) => `/api/v1/documents/${id}/promote-to-deal`,
+  bindToDeal: (docId: string, dealId: string) => `/api/v1/documents/${docId}/bind-to-deal/${dealId}`,
+  startPipeline: (id: string) => `/api/v1/processing/pipelines/start/${id}`,
 
   // Compliance
   compliance: '/api/v1/compliance',
