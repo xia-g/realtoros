@@ -15,6 +15,7 @@ class Client(UUIDMixin, TimestampMixin, Base):
 
     type: Mapped[str] = mapped_column(String(20), default="buyer", nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="lead", nullable=False)
+    inn: Mapped[str | None] = mapped_column(String(12), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
