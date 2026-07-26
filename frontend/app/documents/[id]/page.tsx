@@ -60,9 +60,16 @@ export default function DocumentProfilePage() {
   const doc = docData as any
 
   // Fetch document lifecycle status from document_intake table
-  const { data: lifecycleStatus } = useQuery({
+  const { data: lifecycleStatus } = useQuery<{status: string; allowed_transitions: string[]} | null>({
     queryKey: ['document-lifecycle', docId],
-    queryFn: () => api.get(endpoints.documentStatus(docId)).catch(() => null),
+    queryFn: async (): Promise<{status: string; allowed_transitions: string[]} | null> => {
+      try {
+        const res = await api.get(endpoints.documentStatus(docId));
+        return res as {status: string; allowed_transitions: string[]};
+      } catch {
+        return null;
+      }
+    },
     retry: 1,
   })
 
