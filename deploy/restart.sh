@@ -9,6 +9,8 @@ echo "=== RealtorOS — restart ==="
 # Build frontend
 echo "[1] Building frontend..."
 cd "$ROOT/frontend"
+echo "  Cleaning Next.js cache..."
+rm -rf "$ROOT/frontend/.next"
 npx next build 2>&1 | tail -5
 
 # Restart services via systemd
@@ -19,6 +21,10 @@ sudo systemctl restart realtoros-ocr-worker 2>/dev/null || echo "  ⚠ OCR Worke
 sleep 1
 sudo systemctl restart realtoros-api 2>/dev/null || echo "  ⚠ Backend systemd not found"
 sudo systemctl restart realtoros-frontend 2>/dev/null || echo "  ⚠ Frontend systemd not found"
+
+# Reload nginx to clear cached old HTML with stale chunk refs
+echo "  Reloading nginx..."
+sudo systemctl reload nginx 2>/dev/null || sudo systemctl restart nginx 2>/dev/null || echo "  ⚠ nginx reload/restart failed"
 
 # Wait for services
 sleep 6
