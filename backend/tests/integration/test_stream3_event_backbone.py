@@ -612,6 +612,137 @@ class TestEventPublisher:
         await publisher._poll_once()
         publisher._outbox_repo.mark_failed.assert_called_once()
 
+    @pytest.mark.asyncio
+    async def test_5_no_consumers_registered(self, publisher, mock_db):
+        """No consumers registered -> event marked as published without error."""
+        mock_conn, mock_cursor = mock_db
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=[
+            {"id": uuid4(), "event_type": "document.ready", "aggregate_type": "Document",
+             "aggregate_id": "doc-001", "payload": {
+                 "event_id": str(uuid4()),
+                 "event_type": "document.ready",
+                 "aggregate_type": "Document",
+                 "aggregate_id": "doc-001",
+                 "occurred_at": datetime.now(timezone.utc).isoformat(),
+                 "version": 1,
+                 "payload": {},
+                 "metadata": {},
+             },
+             "metadata": {}, "created_at": datetime.now(timezone.utc),
+             "published_at": None, "attempts": 0, "last_error": None, "status": "pending"},
+        ])
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+
+        # No consumers registered for "document.ready"
+        await publisher._poll_once()
+        publisher._outbox_repo.mark_published.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_6_batch_processing(self, publisher, mock_db):
+        """Multiple pending events processed in one poll cycle."""
+        async def success_handler(event):
+            return ConsumerResult(success=True)
+
+        publisher.register_consumer("document.ready", success_handler)
+
+        event_ids = [uuid4(), uuid4(), uuid4()]
+        pending_events = [
+            {"id": eid, "event_type": "document.ready", "aggregate_type": "Document",
+             "aggregate_id": "doc-001", "payload": {
+                 "event_id": str(eid),
+                 "event_type": "document.ready",
+                 "aggregate_type": "Document",
+                 "aggregate_id": "doc-001",
+                 "occurred_at": datetime.now(timezone.utc).isoformat(),
+                 "version": 1,
+                 "payload": {"idx": i},
+                 "metadata": {},
+             },
+             "metadata": {}, "created_at": datetime.now(timezone.utc),
+             "published_at": None, "attempts": 0, "last_error": None, "status": "pending"}
+            for i, eid in enumerate(event_ids)
+        ]
+
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=pending_events)
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+
+        await publisher._poll_once()
+        assert publisher._outbox_repo.mark_published.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_7_graceful_shutdown_stops_after_current_batch(self, publisher, mock_db):
+        """Graceful shutdown: stop() exits after current iteration."""
+        event_id = uuid4()
+        processed = []
+
+        async def slow_handler(event):
+            processed.append(event.event_id)
+            return ConsumerResult(success=True)
+
+        publisher.register_consumer("document.ready", slow_handler)
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=[
+            {"id": event_id, "event_type": "document.ready", "aggregate_type": "Document",
+             "aggregate_id": "doc-001", "payload": {
+                 "event_id": str(event_id),
+                 "event_type": "document.ready",
+                 "aggregate_type": "Document",
+                 "aggregate_id": "doc-001",
+                 "occurred_at": datetime.now(timezone.utc).isoformat(),
+                 "version": 1,
+                 "payload": {},
+                 "metadata": {},
+             },
+             "metadata": {}, "created_at": datetime.now(timezone.utc),
+             "published_at": None, "attempts": 0, "last_error": None, "status": "pending"},
+        ])
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+
+        # Simulate stop after poll — event completed normally
+        await publisher._poll_once()
+        await publisher.stop()
+
+        # Event still got processed (in-flight completed)
+        assert len(processed) == 1
+        assert not publisher._running
+
+    @pytest.mark.asyncio
+    async def test_8_in_flight_counter(self, publisher, mock_db):
+        """In-flight counter accurately tracks events being processed."""
+        event_id = uuid4()
+        in_flight_during = []
+
+        async def tracking_handler(event):
+            in_flight_during.append(publisher.in_flight)
+            return ConsumerResult(success=True)
+
+        publisher.register_consumer("document.ready", tracking_handler)
+        publisher._outbox_repo.fetch_pending = MagicMock(return_value=[
+            {"id": event_id, "event_type": "document.ready", "aggregate_type": "Document",
+             "aggregate_id": "doc-001", "payload": {
+                 "event_id": str(event_id),
+                 "event_type": "document.ready",
+                 "aggregate_type": "Document",
+                 "aggregate_id": "doc-001",
+                 "occurred_at": datetime.now(timezone.utc).isoformat(),
+                 "version": 1,
+                 "payload": {},
+                 "metadata": {},
+             },
+             "metadata": {}, "created_at": datetime.now(timezone.utc),
+             "published_at": None, "attempts": 0, "last_error": None, "status": "pending"},
+        ])
+        publisher._outbox_repo.fetch_failed = MagicMock(return_value=[])
+        publisher._outbox_repo.mark_published = MagicMock()
+
+        assert publisher.in_flight == 0
+        await publisher._poll_once()
+        assert publisher.in_flight == 0
+        # During processing, in_flight was 1
+        assert in_flight_during == [1]
+
 
 # ═══════════════════════════════════════════════════════════════════
 # 7. Replay Tests

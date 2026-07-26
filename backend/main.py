@@ -123,11 +123,16 @@ async def lifespan(app: FastAPI):
     if hasattr(app.state, "publisher_task") and app.state.publisher_task:
         if hasattr(app.state, "event_publisher") and app.state.event_publisher:
             await app.state.event_publisher.stop()
-        app.state.publisher_task.cancel()
+        # Let the publisher drain in-flight events gracefully (5s timeout)
         try:
-            await app.state.publisher_task
-        except asyncio.CancelledError:
-            pass
+            await asyncio.wait_for(app.state.publisher_task, timeout=5.0)
+        except (asyncio.TimeoutError, asyncio.CancelledError):
+            logger.warning("event_publisher_drain_timeout")
+            app.state.publisher_task.cancel()
+            try:
+                await app.state.publisher_task
+            except asyncio.CancelledError:
+                pass
         logger.info("event_publisher_stopped")
 
 
