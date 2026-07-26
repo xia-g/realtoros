@@ -57,13 +57,6 @@ _rate_limiter = RateLimiter()
 _agent_runtime = None  # Initialised lazily
 
 
-def _register_event_handlers():
-    """Register domain event handlers on startup."""
-    from backend.core.domain_events import get_event_bus
-    from backend.core.event_handlers import register_sync_handlers
-    register_sync_handlers(get_event_bus())
-
-
 def _get_agent_runtime():
     """Lazy init of AgentRuntime singleton."""
     global _agent_runtime
@@ -142,10 +135,6 @@ def _get_agent_runtime():
         )
 
     return _agent_runtime
-
-
-# Register event handlers on first import
-_register_event_handlers()
 
 
 # ─── Endpoints ───

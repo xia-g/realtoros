@@ -1,20 +1,25 @@
-"""Event sync handlers — синхронизация CRM → Graph / Embeddings / Search.
+"""Event sync handlers — синхронизация CRM -> Graph / Embeddings / Search.
 
 Подключаются к DomainEventBus и обновляют Knowledge Graph при изменениях CRM.
-Версия 2: реальная синхронизация через GraphLifecycleService.
+Версия 3: Stream 3 — IntegrationEvent consumer for GraphSync.
 """
-
 from __future__ import annotations
 
 from structlog import get_logger
 
 from backend.core.domain_events import DomainEvent
+from backend.core.integration_event import IntegrationEvent
+from backend.infrastructure.consumer_base import ConsumerResult
 
 logger = get_logger(__name__)
 
 
 async def graph_sync_handler(event: DomainEvent) -> None:
-    """Синхронизировать GraphNode при изменении CRM-сущности."""
+    """Синхронизировать GraphNode при изменении CRM-сущности.
+
+    DomainEventBus handler (in-memory, for backward compatibility).
+    Will be fully replaced by graph_sync_consumer after Stream 3 migration.
+    """
     try:
         from backend.services.graph_lifecycle_service import GraphLifecycleService
         svc = GraphLifecycleService()
@@ -35,6 +40,38 @@ async def graph_sync_handler(event: DomainEvent) -> None:
             entity_id=str(event.entity_id),
             error=str(e),
         )
+
+
+async def graph_sync_consumer(event: IntegrationEvent) -> ConsumerResult:
+    """GraphSync consumer for IntegrationEvent (Stream 3).
+
+    Called by EventPublisher when a new event is delivered.
+    Idempotent: dedup handled by BaseConsumer / ConsumerStateRepository.
+    """
+    try:
+        from backend.services.graph_lifecycle_service import GraphLifecycleService
+        svc = GraphLifecycleService()
+        await svc.sync_entity(
+            entity_type=event.aggregate_type,
+            entity_id=event.aggregate_id,
+            source=event.event_type.split(".")[0],
+        )
+        logger.info(
+            "graph_sync_consumer_completed",
+            event_id=str(event.event_id),
+            event_type=event.event_type,
+            aggregate_id=event.aggregate_id,
+        )
+        return ConsumerResult(success=True)
+    except Exception as e:
+        logger.error(
+            "graph_sync_consumer_failed",
+            event_id=str(event.event_id),
+            event_type=event.event_type,
+            aggregate_id=event.aggregate_id,
+            error=str(e),
+        )
+        return ConsumerResult(success=False, error=str(e), retryable=True)
 
 
 async def embedding_sync_handler(event: DomainEvent) -> None:

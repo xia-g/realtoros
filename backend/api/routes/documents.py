@@ -1,10 +1,12 @@
 """Document management API endpoints.
 
 Sync lifecycle operations via DocumentRepository (psycopg2).
+Stream 3: outbox-based event delivery instead of fire-and-forget emit.
 """
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import uuid
 from datetime import datetime, timezone
@@ -19,6 +21,7 @@ from backend.services.document_lifecycle import (
     transition_document,
     VALID_TRANSITIONS,
 )
+from backend.core.integration_event import IntegrationEvent, EventAdapter
 
 router = APIRouter()
 
@@ -207,7 +210,7 @@ async def mark_document_ready_endpoint(document_id: str, request: Request):
     """Mark a document as READY.
 
     Document must be in ANALYZED or NEEDS_REVIEW state.
-    Emits EVENT_DOCUMENT_READY domain event.
+    Stream 3: save + outbox enqueue + business_events append in one transaction.
     Returns updated document with event_id and event_type.
     """
     repo = _get_repo()
@@ -219,7 +222,7 @@ async def mark_document_ready_endpoint(document_id: str, request: Request):
     ctx = get_request_context()
     actor_id = ctx.user_id if ctx and ctx.user_id else "system"
 
-    err, event = mark_document_ready(doc, actor_id=actor_id)
+    err, domain_event = mark_document_ready(doc, actor_id=actor_id)
     if err:
         # 409 Conflict for idempotency (already READY)
         if "already in READY" in err:
@@ -227,9 +230,41 @@ async def mark_document_ready_endpoint(document_id: str, request: Request):
         # 422 Unprocessable Entity for invalid transitions
         raise HTTPException(status_code=422, detail=err)
 
-    repo.save(doc)
+    # Build IntegrationEvent for outbox delivery
+    integration_event = IntegrationEvent(
+        event_id=uuid.uuid4(),
+        event_type=domain_event.event_type,
+        aggregate_type="Document",
+        aggregate_id=doc.document_id,
+        occurred_at=domain_event.occurred_at or datetime.now(timezone.utc),
+        version=1,
+        payload=domain_event.payload,
+        metadata={
+            "schema_version": 1,
+            "producer": "document-lifecycle",
+            "correlation_id": domain_event.correlation_id or "",
+        },
+    )
+
+    # Save document + enqueue outbox + append business_events in ONE transaction
+    from backend.repositories.outbox_repository import OutboxRepository
+    from backend.repositories.event_repository import EventRepository
+
+    conn = repo._connect()
+    try:
+        repo.save(doc, conn=conn)
+        outbox_repo = OutboxRepository(settings.DATABASE_SYNC_URL)
+        outbox_repo.enqueue(integration_event, conn=conn)
+        event_repo = EventRepository(settings.DATABASE_SYNC_URL)
+        event_repo.append(integration_event, conn=conn)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
     result = _serialize_doc(doc)
-    result["event_id"] = str(event.entity_id) if event else None
-    result["event_type"] = event.event_type if event else None
+    result["event_id"] = str(integration_event.event_id)
+    result["event_type"] = integration_event.event_type
     return result

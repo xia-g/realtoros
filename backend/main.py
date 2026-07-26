@@ -10,6 +10,7 @@ Runtime foundation:
 
 from __future__ import annotations
 
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -40,11 +41,43 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("database_unavailable", error=db_result.get("error"))
 
-    # Register domain event handlers
-    from backend.core.event_handlers import register_sync_handlers
-    from backend.core.domain_events import get_event_bus
-    register_sync_handlers(get_event_bus())
+    # Register domain event handlers (single point, P8 fix)
+    from backend.core.event_registry import ensure_event_registry
+    ensure_event_registry()
     logger.info("event_handlers_registered")
+
+    # ── Start Event Publisher background task (Stream 3) ───────
+    publisher = None
+    try:
+        from backend.infrastructure.event_publisher import EventPublisher
+        publisher = EventPublisher(
+            dsn=settings.DATABASE_SYNC_URL,
+            poll_interval=1.0,
+            batch_size=50,
+        )
+        # Register GraphSync consumer (migrated to IntegrationEvent)
+        from backend.core.event_handlers import graph_sync_consumer
+        publisher.register_consumer("document.ready", graph_sync_consumer)
+        publisher.register_consumer("document.created", graph_sync_consumer)
+        publisher.register_consumer("document.deleted", graph_sync_consumer)
+        publisher.register_consumer("client.created", graph_sync_consumer)
+        publisher.register_consumer("client.updated", graph_sync_consumer)
+        publisher.register_consumer("client.deleted", graph_sync_consumer)
+        publisher.register_consumer("property.created", graph_sync_consumer)
+        publisher.register_consumer("property.updated", graph_sync_consumer)
+        publisher.register_consumer("property.deleted", graph_sync_consumer)
+        publisher.register_consumer("deal.created", graph_sync_consumer)
+        publisher.register_consumer("deal.updated", graph_sync_consumer)
+        publisher.register_consumer("deal.deleted", graph_sync_consumer)
+        publisher.register_consumer("lead.converted", graph_sync_consumer)
+        publisher.register_consumer("lead.merged", graph_sync_consumer)
+        app.state.event_publisher = publisher
+        app.state.publisher_task = asyncio.create_task(publisher.start())
+        logger.info("event_publisher_started")
+    except Exception as e:
+        logger.warning("event_publisher_start_failed", error=str(e))
+        app.state.event_publisher = None
+        app.state.publisher_task = None
 
     # ── Knowledge Runtime Bootstrap ────────────────────────────
     try:
@@ -87,6 +120,15 @@ async def lifespan(app: FastAPI):
 
     # ── Shutdown ───────────────────────────────────────────────
     logger.info("application_stopping")
+    if hasattr(app.state, "publisher_task") and app.state.publisher_task:
+        if hasattr(app.state, "event_publisher") and app.state.event_publisher:
+            await app.state.event_publisher.stop()
+        app.state.publisher_task.cancel()
+        try:
+            await app.state.publisher_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("event_publisher_stopped")
 
 
 def create_app() -> FastAPI:

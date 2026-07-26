@@ -76,3 +76,6 @@ from backend.models.platform_setting import PlatformSetting, DEFAULT_SETTINGS
 from backend.models.analytics_snapshot import AnalyticsSnapshot
 from backend.models.analytics_alert import AnalyticsAlert
 from backend.models.prediction_result import PredictionResult
+from backend.models.event_outbox import EventOutbox
+from backend.models.business_events import BusinessEvent
+from backend.models.consumer_processed_events import ConsumerProcessedEvent
