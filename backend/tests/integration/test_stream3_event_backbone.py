@@ -923,9 +923,28 @@ class TestGraphSyncConsumer:
     """GraphSyncConsumer — dedup, event processing, publisher integration."""
 
     @pytest.fixture
-    def consumer(self):
+    def mock_session(self):
+        session = AsyncMock()
+        session.__aenter__ = AsyncMock(return_value=session)
+        session.__aexit__ = AsyncMock(return_value=None)
+        session.commit = AsyncMock()
+        session.rollback = AsyncMock()
+        session.execute = AsyncMock()
+        return session
+
+    @pytest.fixture
+    def mock_session_factory(self, mock_session):
+        factory = MagicMock()
+        factory.return_value = mock_session
+        return factory
+
+    @pytest.fixture
+    def consumer(self, mock_session_factory):
         from backend.infrastructure.consumers.graph_sync_consumer import GraphSyncConsumer
-        return GraphSyncConsumer(dsn="postgresql://test:***@localhost/test")
+        return GraphSyncConsumer(
+            dsn="postgresql://test:***@localhost/test",
+            session_factory=mock_session_factory,
+        )
 
     @pytest.fixture
     def sample_event(self):
@@ -1070,7 +1089,11 @@ class TestPublisherGraphSyncIntegration:
     @pytest.fixture
     def graph_sync_consumer(self):
         from backend.infrastructure.consumers.graph_sync_consumer import GraphSyncConsumer
-        c = GraphSyncConsumer(dsn="postgresql://test:***@localhost/test")
+        mock_session_factory = MagicMock()
+        c = GraphSyncConsumer(
+            dsn="postgresql://test:***@localhost/test",
+            session_factory=mock_session_factory,
+        )
         # Mock state repo to avoid real DB
         c._state_repo = MagicMock()
         c._state_repo.is_processed.return_value = False

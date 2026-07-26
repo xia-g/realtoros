@@ -62,12 +62,25 @@ async def lifespan(app: FastAPI):
         )
 
         # Register GraphSync class-based consumer (with dedup via BaseConsumer)
-        graph_sync = GraphSyncConsumer(dsn=settings.DATABASE_SYNC_URL)
-
-        # Register DealContextResolution consumer (with dedup via BaseConsumer)
         from backend.database import async_session_factory
 
+        graph_sync = GraphSyncConsumer(
+            dsn=settings.DATABASE_SYNC_URL,
+            session_factory=async_session_factory,
+        )
+
+        # Register DealContextResolution consumer (with dedup via BaseConsumer)
         deal_context_resolution = DealContextResolutionConsumer(
+            dsn=settings.DATABASE_SYNC_URL,
+            session_factory=async_session_factory,
+        )
+
+        # Register KnowledgeRuntime consumer (with dedup via BaseConsumer)
+        from backend.infrastructure.consumers.knowledge_runtime_consumer import (
+            KnowledgeRuntimeConsumer,
+        )
+
+        knowledge_runtime = KnowledgeRuntimeConsumer(
             dsn=settings.DATABASE_SYNC_URL,
             session_factory=async_session_factory,
         )
@@ -93,6 +106,10 @@ async def lifespan(app: FastAPI):
         # Register DealContextResolution consumer specifically for document.ready
         publisher.register_consumer(
             "document.ready", deal_context_resolution.consume
+        )
+        # Register KnowledgeRuntime consumer specifically for document.ready
+        publisher.register_consumer(
+            "document.ready", knowledge_runtime.consume
         )
         app.state.event_publisher = publisher
         app.state.publisher_task = asyncio.create_task(publisher.start())
