@@ -20,7 +20,17 @@ sleep 2
 sudo systemctl restart realtoros-ocr-worker 2>/dev/null || echo "  ⚠ OCR Worker systemd not found"
 sleep 1
 sudo systemctl restart realtoros-api 2>/dev/null || echo "  ⚠ Backend systemd not found"
-sudo systemctl restart realtoros-frontend 2>/dev/null || echo "  ⚠ Frontend systemd not found"
+sudo systemctl restart realtoros-frontend 2>/dev/null || {
+  echo "  ⚠ Frontend systemd restart failed — trying fallback..."
+  # Kill any manually started Next.js process holding port 3000
+  OLD_PID=$(lsof -ti :3000 2>/dev/null || true)
+  if [ -n "$OLD_PID" ]; then
+    echo "  Killing old process PID $OLD_PID on port 3000"
+    kill "$OLD_PID" 2>/dev/null || true
+    sleep 2
+  fi
+  sudo systemctl restart realtoros-frontend 2>/dev/null || echo "  ⚠ Frontend systemd restart failed again"
+}
 
 # Reload nginx to clear cached old HTML with stale chunk refs
 echo "  Reloading nginx..."
