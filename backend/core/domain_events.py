@@ -84,6 +84,7 @@ EVENT_DEAL_DELETED = "deal.deleted"
 
 EVENT_DOCUMENT_CREATED = "document.created"
 EVENT_DOCUMENT_DELETED = "document.deleted"
+EVENT_DOCUMENT_READY = "document.ready"
 
 EVENT_LEAD_CONVERTED = "lead.converted"
 EVENT_LEAD_MERGED = "lead.merged"
