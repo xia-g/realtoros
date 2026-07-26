@@ -131,6 +131,9 @@ class DealContextResolutionConsumer(BaseConsumer):
                     deal_id=str(deal.id),
                     status=status,
                 )
+
+                # Emit deal.accounting_ready for accounting event integration
+                await self._emit_accounting_ready(deal, event)
             except Exception:
                 await session.rollback()
                 raise

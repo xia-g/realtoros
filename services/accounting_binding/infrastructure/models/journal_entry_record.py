@@ -45,6 +45,10 @@ class JournalEntryRecord(Base):
     # Process state
     process_state: Mapped[str] = mapped_column(String(20), default="completed")
 
+    # Deal correlation (Phase 1 — accounting event integration)
+    source_event_id: Mapped[str] = mapped_column(String(36), default="", index=True, nullable=False)
+    source_type: Mapped[str] = mapped_column(String(64), default="", index=True, nullable=False)
+
     # Audit
     posted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     posted_by: Mapped[str] = mapped_column(String(64), default="")

@@ -89,6 +89,11 @@ class AccountingDocument(BaseModel):
     company_id: str = ""
     document_date: date
 
+    # Deal correlation (Phase 1 — accounting event integration)
+    deal_id: str = Field(default="", description="UUID of source deal")
+    source_event_id: str = Field(default="", description="UUID of triggering event")
+    source_type: str = Field(default="", description="Event type that triggered creation")
+
     # Проводки
     entries: list[AccountEntry] = Field(default_factory=list)
     tax_entries: list[TaxEntry] = Field(default_factory=list)
