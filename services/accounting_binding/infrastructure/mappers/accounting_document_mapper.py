@@ -44,6 +44,9 @@ class AccountingDocumentMapper:
             mapping_hash=doc.mapping_hash,
             approval_revision=doc.approval_revision,
             approved_mapping_hash=doc.approved_mapping_hash,
+            deal_id=doc.deal_id,
+            source_event_id=doc.source_event_id,
+            source_type=doc.source_type,
         )
 
     @staticmethod
@@ -74,4 +77,7 @@ class AccountingDocumentMapper:
             mapping_hash=record.mapping_hash or "",
             approval_revision=record.approval_revision or 0,
             approved_mapping_hash=record.approved_mapping_hash or "",
+            deal_id=record.deal_id or "",
+            source_event_id=record.source_event_id or "",
+            source_type=record.source_type or "",
         )

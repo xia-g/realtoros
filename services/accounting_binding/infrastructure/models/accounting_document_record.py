@@ -77,6 +77,11 @@ class AccountingDocumentRecord(Base):
     # Correlation
     pipeline_run_id: Mapped[str] = mapped_column(String(36), default="")
 
+    # Deal correlation (Phase 1 — accounting event integration)
+    deal_id: Mapped[str] = mapped_column(String(36), default="", index=True, nullable=False)
+    source_event_id: Mapped[str] = mapped_column(String(36), default="", index=True, nullable=False)
+    source_type: Mapped[str] = mapped_column(String(64), default="", index=True, nullable=False)
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

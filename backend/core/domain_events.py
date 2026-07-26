@@ -89,6 +89,8 @@ EVENT_DOCUMENT_READY = "document.ready"
 EVENT_LEAD_CONVERTED = "lead.converted"
 EVENT_LEAD_MERGED = "lead.merged"
 
+EVENT_DEAL_ACCOUNTING_READY = "deal.accounting_ready"
+
 
 # ─── Singleton ───
 

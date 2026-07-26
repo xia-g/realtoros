@@ -85,6 +85,16 @@ async def lifespan(app: FastAPI):
             session_factory=async_session_factory,
         )
 
+        # Register DealAccounting consumer (with dedup via BaseConsumer)
+        from backend.infrastructure.consumers.deal_accounting_consumer import (
+            DealAccountingConsumer,
+        )
+
+        deal_accounting = DealAccountingConsumer(
+            dsn=settings.DATABASE_SYNC_URL,
+            session_factory=async_session_factory,
+        )
+
         EVENT_TYPES = [
             "document.ready",
             "document.created",
@@ -98,6 +108,7 @@ async def lifespan(app: FastAPI):
             "deal.created",
             "deal.updated",
             "deal.deleted",
+            "deal.accounting_ready",
             "lead.converted",
             "lead.merged",
         ]
@@ -110,6 +121,10 @@ async def lifespan(app: FastAPI):
         # Register KnowledgeRuntime consumer specifically for document.ready
         publisher.register_consumer(
             "document.ready", knowledge_runtime.consume
+        )
+        # Register DealAccounting consumer specifically for deal.accounting_ready
+        publisher.register_consumer(
+            "deal.accounting_ready", deal_accounting.consume
         )
         app.state.event_publisher = publisher
         app.state.publisher_task = asyncio.create_task(publisher.start())

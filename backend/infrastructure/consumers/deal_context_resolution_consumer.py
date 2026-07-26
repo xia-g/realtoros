@@ -131,6 +131,9 @@ class DealContextResolutionConsumer(BaseConsumer):
                     deal_id=str(deal.id),
                     status=status,
                 )
+
+                # Emit deal.accounting_ready for accounting event integration
+                await self._emit_accounting_ready(deal, event)
             except Exception:
                 await session.rollback()
                 raise
@@ -224,3 +227,49 @@ class DealContextResolutionConsumer(BaseConsumer):
                 candidate_ids=[str(c) for c in result.seller_result.candidate_ids],
                 document_payload_snapshot=profile,
             )
+
+    async def _emit_accounting_ready(
+        self,
+        deal: Deal,
+        event: IntegrationEvent,
+    ) -> None:
+        """Emit deal.accounting_ready event for accounting event integration.
+
+        Creates a DomainEvent with deal_id, price, commission, deposit_amount
+        so DealAccountingConsumer can create AccountingDocument in READY status.
+
+        Args:
+            deal: The resolved Deal with price/commission/deposit data.
+            event: The original document.ready IntegrationEvent (provides correlation_id).
+        """
+        from backend.core.domain_events import (
+            DomainEvent,
+            EVENT_DEAL_ACCOUNTING_READY,
+            get_event_bus,
+        )
+
+        payload = {
+            "deal_id": str(deal.id),
+            "price": float(deal.price),
+            "price_currency": deal.price_currency,
+            "commission": float(deal.commission or 0),
+            "deposit_amount": float(deal.deposit_amount or 0),
+            "original_event_id": str(event.event_id),
+            "original_event_type": event.event_type,
+        }
+
+        domain_event = DomainEvent(
+            event_type=EVENT_DEAL_ACCOUNTING_READY,
+            entity_type="Deal",
+            entity_id=deal.id,
+            correlation_id=str(event.event_id),
+            payload=payload,
+        )
+
+        bus = get_event_bus()
+        await bus.emit(domain_event)
+        logger.info(
+            "deal_accounting_ready_emitted",
+            deal_id=str(deal.id),
+            original_event_id=str(event.event_id),
+        )
