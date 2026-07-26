@@ -51,14 +51,27 @@ async def lifespan(app: FastAPI):
     try:
         from backend.infrastructure.event_publisher import EventPublisher
         from backend.infrastructure.consumers.graph_sync_consumer import GraphSyncConsumer
+        from backend.infrastructure.consumers.deal_context_resolution_consumer import (
+            DealContextResolutionConsumer,
+        )
 
         publisher = EventPublisher(
             dsn=settings.DATABASE_SYNC_URL,
             poll_interval=1.0,
             batch_size=50,
         )
+
         # Register GraphSync class-based consumer (with dedup via BaseConsumer)
         graph_sync = GraphSyncConsumer(dsn=settings.DATABASE_SYNC_URL)
+
+        # Register DealContextResolution consumer (with dedup via BaseConsumer)
+        from backend.database import async_session_factory
+
+        deal_context_resolution = DealContextResolutionConsumer(
+            dsn=settings.DATABASE_SYNC_URL,
+            session_factory=async_session_factory,
+        )
+
         EVENT_TYPES = [
             "document.ready",
             "document.created",
@@ -77,6 +90,10 @@ async def lifespan(app: FastAPI):
         ]
         for et in EVENT_TYPES:
             publisher.register_consumer(et, graph_sync.consume)
+        # Register DealContextResolution consumer specifically for document.ready
+        publisher.register_consumer(
+            "document.ready", deal_context_resolution.consume
+        )
         app.state.event_publisher = publisher
         app.state.publisher_task = asyncio.create_task(publisher.start())
         logger.info("event_publisher_started")

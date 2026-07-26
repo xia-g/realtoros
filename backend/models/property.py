@@ -15,6 +15,7 @@ class Property(UUIDMixin, TimestampMixin, Base):
 
     property_type: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="available", nullable=False)
+    cadastral_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
     deal_type: Mapped[str] = mapped_column(String(20), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

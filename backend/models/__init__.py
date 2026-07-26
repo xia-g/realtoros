@@ -79,3 +79,4 @@ from backend.models.prediction_result import PredictionResult
 from backend.models.event_outbox import EventOutbox
 from backend.models.business_events import BusinessEvent
 from backend.models.consumer_processed_events import ConsumerProcessedEvent
+from backend.models.resolution_attempt import ResolutionAttempt
