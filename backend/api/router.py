@@ -19,6 +19,7 @@ from backend.api.routes.auth import router as auth_router
 from backend.api.routes.companies import router as companies_router
 from backend.api.routes.uploads import router as uploads_router
 from backend.api.routes.obligations import router as obligations_router
+from backend.api.routes.processing import router as processing_router
 from backend.api.routes.promote_to_deal import router as promote_router, requirements_router, timeline_router
 from backend.api.routes.deal_resolution import router as resolution_router
 from backend.accounting.api.routes import router as accounting_router
@@ -47,6 +48,7 @@ api_router.include_router(auth_router, prefix="/auth", tags=["Auth"])
 api_router.include_router(companies_router, prefix="", tags=["Companies"])
 api_router.include_router(uploads_router, prefix="", tags=["Uploads"])
 api_router.include_router(obligations_router, prefix="", tags=["Obligations"])
+api_router.include_router(processing_router, prefix="", tags=["Processing"])
 api_router.include_router(promote_router, prefix="", tags=["Document→Deal"])
 api_router.include_router(requirements_router, prefix="", tags=["Deal Requirements"])
 api_router.include_router(timeline_router, prefix="", tags=["Deal Timeline"])
