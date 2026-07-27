@@ -9,6 +9,8 @@ Product Layer, not Platform.
 """
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, HTTPException, Request
 
 from backend.services.processing.pipeline import PipelineOrchestrator
@@ -16,7 +18,13 @@ from backend.services.processing.steps.ocr_step import execute_ocr_step
 from backend.services.processing.steps.classification_step import execute_classification_step
 from backend.services.processing.steps.extraction_step import execute_extraction_step
 from backend.services.processing.steps.knowledge_step import execute_knowledge_step
-from backend.services.document_lifecycle import DocumentRepository, transition_document
+from backend.services.document_lifecycle import (
+    DocumentRepository,
+    mark_document_ready,
+    transition_document,
+)
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/processing", tags=["Document Processing"])
 
@@ -101,6 +109,16 @@ async def start_pipeline(document_id: str, request: Request):
                             doc.profile["total_price"] = sections["financial_terms"]["total_price"].get("value")
                 if s.step_type == "ocr" and s.result:
                     doc.profile["ocr_confidence"] = s.result.get("ocr", {}).get("confidence", 0)
+
+            # Emit document.ready event to trigger Epic 3 consumers
+            err_ready, event = mark_document_ready(doc)
+            if err_ready:
+                logger.error("mark_ready_failed", extra={"document_id": doc.document_id, "error": err_ready})
+            else:
+                logger.info("document_ready_emitted", extra={
+                    "document_id": doc.document_id,
+                    "event_type": event.event_type if event else "unknown",
+                })
         elif result.status == "NEEDS_REVIEW":
             err = transition_document(doc, "NEEDS_REVIEW")
             if err:

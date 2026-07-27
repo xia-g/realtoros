@@ -47,6 +47,7 @@ export default function DocumentsImportPage() {
   const [pendingDeal, setPendingDeal] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const pendingDealRef = useRef<string | null>(null)
+  const lifecycleDocIdRef = useRef<string | null>(null)
 
   useEffect(() => { fetchCompanies() }, [])
 
@@ -120,6 +121,9 @@ export default function DocumentsImportPage() {
 
       // 3a: Ensure lifecycle record exists in document_intake table
       const lifecycleDocId = await ensureLifecycleRecord(jobId)
+      if (lifecycleDocId) {
+        lifecycleDocIdRef.current = lifecycleDocId
+      }
 
       // 3b: Walk lifecycle transitions UPLOADED → VALIDATED → ACCEPTED
       if (lifecycleDocId) {
@@ -311,13 +315,7 @@ export default function DocumentsImportPage() {
    */
   const ensureLifecycleRecord = async (jobId: string): Promise<string | null> => {
     try {
-      // Check if doc already exists in lifecycle table
-      const checkResp = await fetch(`${API_URL}/api/v1/documents/${jobId}`)
-      if (checkResp.ok) {
-        const existing = await checkResp.json()
-        return existing.document_id || jobId
-      }
-      // Create lifecycle record by re-uploading the file to the documents API
+      // Create lifecycle record by uploading the file to the documents API
       if (!file) return null
       const fd = new FormData()
       fd.append('file', file)
@@ -410,9 +408,10 @@ export default function DocumentsImportPage() {
     try {
       const currentPendingDeal = pendingDealRef.current
       const isBind = !!currentPendingDeal
+      const docId = lifecycleDocIdRef.current || result?.document_id || result?.job_id || ''
       const url = isBind
-        ? `${API_URL}/api/v1/documents/${result.job_id}/bind-to-deal/${currentPendingDeal}`
-        : `${API_URL}/api/v1/documents/${result.job_id}/promote-to-deal`
+        ? `${API_URL}/api/v1/documents/${docId}/bind-to-deal/${currentPendingDeal}`
+        : `${API_URL}/api/v1/documents/${docId}/promote-to-deal`
 
       const resp = await fetch(url, { method: 'POST' })
       if (!resp.ok) {
@@ -431,7 +430,7 @@ export default function DocumentsImportPage() {
       }
 
       // ── Collect document ID for lifecycle operations ──
-      const lifecycleDocId = result?.job_id || deal.document_id || ''
+      const lifecycleDocId = lifecycleDocIdRef.current || deal.document_id || ''
 
       if (deal.status === 'existing' || deal.status === 'already_bound') {
         toast.info(isBind ? 'Документ уже привязан к сделке' : 'Сделка уже существует')
