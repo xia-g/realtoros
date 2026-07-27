@@ -9,8 +9,15 @@ echo "=== RealtorOS — restart ==="
 # Build frontend
 echo "[1] Building frontend..."
 cd "$ROOT/frontend"
-echo "  Cleaning Next.js cache..."
+
+echo "  Cleaning Next.js build artifacts..."
 rm -rf "$ROOT/frontend/.next"
+rm -rf "$ROOT/frontend/node_modules/.cache/next"
+rm -f "$ROOT/frontend/.env.local.bak"
+
+# Also clean any standalone/export artifacts from previous builds
+rm -rf "$ROOT/frontend/out" "$ROOT/frontend/dist"
+
 npx next build 2>&1 | tail -5
 
 # Restart services via systemd
@@ -35,6 +42,12 @@ sudo systemctl restart realtoros-frontend 2>/dev/null || {
 # Reload nginx to clear cached old HTML with stale chunk refs
 echo "  Reloading nginx..."
 sudo systemctl reload nginx 2>/dev/null || sudo systemctl restart nginx 2>/dev/null || echo "  ⚠ nginx reload/restart failed"
+
+# Purge nginx proxy cache if enabled
+if [ -d /var/lib/nginx/cache ]; then
+  echo "  Purging nginx proxy cache..."
+  sudo rm -rf /var/lib/nginx/cache/*
+fi
 
 # Wait for services
 sleep 6
