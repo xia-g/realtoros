@@ -69,7 +69,7 @@ async def resolve_document(document_id: str):
             raw_text = ""
             try:
                 async with httpx.AsyncClient(timeout=5, proxy=None, trust_env=False) as client:
-                    resp = await client.get(f"http://192.168.1.113:8000/api/v1/jobs/{document_id}")
+                    resp = await client.get(f"http://127.0.0.1:8001/api/v1/jobs/{document_id}")
                     if resp.status_code == 200:
                         nd = resp.json().get("normalized_document", {})
                         raw_text = nd.get("raw_text", "")

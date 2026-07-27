@@ -14,7 +14,7 @@
 | Frontend (Next.js) | port 3000 | port 3000 |
 | MCP Server (Node.js) | stdio | stdio |
 | Nginx configs | /etc/nginx/sites-enabled/* | /etc/nginx/sites-enabled/* |
-| OCR Node endpoint | 192.168.1.113:8000 | 192.168.1.113:8000 (тот же) |
+| OCR Node endpoint | 127.0.0.1:8001 | 127.0.0.1:8001 (локальный Tesseract) |
 
 **Общий размер:** ~500 MB (без node_modules/venv — переустановить на месте)
 

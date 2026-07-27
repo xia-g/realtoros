@@ -31,7 +31,7 @@ router = APIRouter(prefix="/upload", tags=["Uploads"])
 # OCR Node settings
 OCR_NODE_URL = os.environ.get(
     "OCR_NODE_URL",
-    "http://192.168.1.113:8000/api/v1",
+    "http://127.0.0.1:8001/api/v1",
 )
 OCR_FALLBACK = os.environ.get("OCR_NODE_FALLBACK", "false").lower() == "true"
 OCR_POLL_INTERVAL = 3
@@ -195,7 +195,7 @@ async def upload_document(
         raise HTTPException(
             status_code=503,
             detail="OCR Node (GPU-распознавание на Windows) недоступен. "
-                   "Убедитесь, что машина 192.168.1.113 включена, "
+                   "Убедитесь, что локальный OCR Node запущен (127.0.0.1:8001), "
                    "или используйте локальный Tesseract (медленнее, без GPU)."
         )
 

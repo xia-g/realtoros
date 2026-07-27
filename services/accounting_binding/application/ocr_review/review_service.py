@@ -31,7 +31,7 @@ from application.ocr_review.review_state import OCRReviewState
 
 logger = logging.getLogger(__name__)
 
-OCR_NODE_URL = "http://192.168.1.113:8000/api/v1"
+OCR_NODE_URL = "http://127.0.0.1:8001/api/v1"
 
 
 class OutboxPublisher(Protocol):

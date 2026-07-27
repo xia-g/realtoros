@@ -25,7 +25,7 @@ router = APIRouter(prefix="/documents", tags=["Document→Deal"])
 
 OCR_NODE_URL = os.environ.get(
     "OCR_NODE_URL",
-    "http://192.168.1.113:8000/api/v1",
+    "http://127.0.0.1:8001/api/v1",
 )
 
 DSN = os.getenv("DATABASE_URL", "postgresql+asyncpg://realtoros:realtoros15!@127.0.0.1:5432/realtoros")
