@@ -10,6 +10,8 @@ Product Layer, not Platform.
 from __future__ import annotations
 
 import logging
+import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -23,6 +25,7 @@ from backend.services.document_lifecycle import (
     mark_document_ready,
     transition_document,
 )
+from backend.core.integration_event import IntegrationEvent
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +79,7 @@ async def start_pipeline(document_id: str, request: Request):
         "knowledge": execute_knowledge_step,
     }
 
+    result = None
     try:
         result = orch.run_pipeline(pipeline.pipeline_id, step_executors)
 
@@ -110,30 +114,64 @@ async def start_pipeline(document_id: str, request: Request):
                 if s.step_type == "ocr" and s.result:
                     doc.profile["ocr_confidence"] = s.result.get("ocr", {}).get("confidence", 0)
 
-            # Emit document.ready event to trigger Epic 3 consumers
-            err_ready, event = mark_document_ready(doc)
+            # Emit document.ready event → persist in outbox for durable delivery
+            err_ready, domain_event = mark_document_ready(doc)
             if err_ready:
                 logger.error("mark_ready_failed", extra={"document_id": doc.document_id, "error": err_ready})
             else:
                 logger.info("document_ready_emitted", extra={
                     "document_id": doc.document_id,
-                    "event_type": event.event_type if event else "unknown",
+                    "event_type": domain_event.event_type if domain_event else "unknown",
                 })
+
+                # Build IntegrationEvent for outbox delivery
+                integration_event = IntegrationEvent(
+                    event_id=uuid.uuid4(),
+                    event_type=domain_event.event_type,
+                    aggregate_type="Document",
+                    aggregate_id=doc.document_id,
+                    occurred_at=domain_event.occurred_at or datetime.now(timezone.utc),
+                    version=1,
+                    payload=domain_event.payload,
+                    metadata={
+                        "schema_version": 1,
+                        "producer": "document-lifecycle",
+                        "correlation_id": domain_event.correlation_id or "",
+                    },
+                )
+
+                # Save document + enqueue outbox in ONE transaction
+                from backend.repositories.outbox_repository import OutboxRepository
+                from backend.config import settings
+
+                conn = doc_repo._connect()
+                try:
+                    doc_repo.save(doc, conn=conn)
+                    outbox_repo = OutboxRepository(settings.DATABASE_SYNC_URL)
+                    outbox_repo.enqueue(integration_event, conn=conn)
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
+                finally:
+                    conn.close()
         elif result.status == "NEEDS_REVIEW":
             err = transition_document(doc, "NEEDS_REVIEW")
             if err:
                 doc.status = "NEEDS_REVIEW"
             doc.pipeline_stage = "needs_review"
+            doc_repo.save(doc)
         elif result.status == "FAILED":
             doc.status = "FAILED"
             doc.pipeline_stage = "failed"
-
-        doc_repo.save(doc)
+            doc_repo.save(doc)
 
     except Exception as e:
         doc.status = "FAILED"
         doc.pipeline_stage = "pipeline_error"
-        doc_repo.save(doc)
+        # Only save if not already saved in the COMPLETED branch
+        if result is None or result.status != "COMPLETED":
+            doc_repo.save(doc)
         raise HTTPException(status_code=500, detail=f"Pipeline execution failed: {e}")
 
     return {

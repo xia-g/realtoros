@@ -59,7 +59,7 @@ class OutboxRepository:
                     )
                     """,
                     (
-                        event.event_id,
+                        str(event.event_id),
                         event.event_type,
                         event.aggregate_type,
                         event.aggregate_id,
