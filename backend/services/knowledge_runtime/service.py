@@ -23,6 +23,7 @@ from backend.ai.embeddings import EmbeddingPipeline
 from backend.models.document import Document
 from backend.models.document_chunk import DocumentChunk
 from backend.services.graph_lifecycle_service import GraphLifecycleService
+from backend.services.knowledge_runtime.document_projection_layer import _load_document_from_intake
 from backend.services.knowledge_runtime.payload import DocumentReadyPayload
 
 logger = get_logger(__name__)
@@ -100,11 +101,8 @@ class KnowledgeRuntimeService:
         session: AsyncSession,
         document_id: UUID,
     ) -> Document | None:
-        """Load a document by ID."""
-        result = await session.execute(
-            select(Document).where(Document.id == document_id)
-        )
-        return result.scalar_one_or_none()
+        """Load a document by ID from document_intake (temporary compatibility layer)."""
+        return await _load_document_from_intake(session, document_id)
 
     async def _ensure_chunks(
         self,
