@@ -152,6 +152,19 @@ async def promote_to_deal(document_id: str):
                           extracted_fields, status, promoted_deal_id, final_type
                    FROM accounting.document_intake WHERE id = $1""", document_id
             )
+
+            # Fallback: если не найден в accounting, ищем по checksum через public.document_intake
+            if intake is None:
+                checksum = await conn.fetchval(
+                    "SELECT checksum FROM document_intake WHERE id = $1", document_id
+                )
+                if checksum:
+                    intake = await conn.fetchrow(
+                        """SELECT id, company_id, file_name, classification, confidence,
+                                  extracted_fields, status, promoted_deal_id, final_type
+                           FROM accounting.document_intake WHERE checksum = $1""", checksum
+                    )
+
             if not intake:
                 raise HTTPException(status_code=404, detail="Document intake not found")
 
