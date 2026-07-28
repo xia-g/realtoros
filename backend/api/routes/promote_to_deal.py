@@ -153,16 +153,16 @@ async def promote_to_deal(document_id: str):
                    FROM accounting.document_intake WHERE id = $1""", document_id
             )
 
-            # Fallback: если не найден в accounting, ищем по checksum через public.document_intake
+            # Fallback: если не найден в accounting, ищем по file_hash через public.document_intake
             if intake is None:
                 checksum = await conn.fetchval(
-                    "SELECT checksum FROM document_intake WHERE id = $1", document_id
+                    "SELECT checksum FROM document_intake WHERE document_id = $1", document_id
                 )
                 if checksum:
                     intake = await conn.fetchrow(
                         """SELECT id, company_id, file_name, classification, confidence,
                                   extracted_fields, status, promoted_deal_id, final_type
-                           FROM accounting.document_intake WHERE checksum = $1""", checksum
+                           FROM accounting.document_intake WHERE file_hash = $1""", checksum
                     )
 
             if not intake:

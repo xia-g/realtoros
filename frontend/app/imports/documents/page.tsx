@@ -367,6 +367,11 @@ export default function DocumentsImportPage() {
       const resp = await fetch(`${API_URL}/api/v1/documents/${documentId}/mark-ready`, {
         method: 'POST',
       })
+      if (resp.status === 409) {
+        // Документ уже в READY — игнорируем конфликт
+        console.log('Document already in READY state, continuing...')
+        return true
+      }
       if (!resp.ok) {
         const errText = await resp.text()
         console.warn('mark-ready failed:', errText)
