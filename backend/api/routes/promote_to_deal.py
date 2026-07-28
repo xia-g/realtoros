@@ -259,6 +259,10 @@ async def promote_to_deal(document_id: str):
                 )
 
                 # Re-emit document.ready for DCR to process with updated promoted_deal_id
+                # TEMPORARY: This is a compatibility layer until the document lifecycle
+                # is redesigned. The long-term architecture should define whether DCR
+                # subscribes to document.ready, deal.document_attached, or another lifecycle event.
+                # See: docs/epic3-remediation-plan.md
                 await conn.execute(
                     text("""
                     INSERT INTO event_outbox (event_type, aggregate_id, payload, status, created_at)
