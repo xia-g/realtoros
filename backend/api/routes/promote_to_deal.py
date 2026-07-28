@@ -239,16 +239,23 @@ async def promote_to_deal(document_id: str):
                                deal_id, conf_level == ConfidenceLevel.AUTO_PROMOTE, document_id)
 
             # Update public.document_intake with promoted_deal_id for canonical Deal mapping (Epic 3)
-            # Match by checksum since public.document_intake.document_id may differ from accounting id
-            await conn.execute(
-                """
-                UPDATE public.document_intake
-                SET promoted_deal_id = $1
-                WHERE checksum = $2
-                """,
-                deal_id,
-                intake["file_hash"],
+            # Match by file_hash since public.document_intake.document_id may differ from accounting id
+            # First find the correct document_id in public.document_intake by file_hash
+            row = await conn.fetchrow(
+                "SELECT document_id FROM public.document_intake WHERE file_hash = $1",
+                intake["file_hash"]
             )
+            if row:
+                public_document_id = row["document_id"]
+                await conn.execute(
+                    """
+                    UPDATE public.document_intake
+                    SET promoted_deal_id = $1
+                    WHERE document_id = $2
+                    """,
+                    deal_id,
+                    public_document_id,
+                )
 
             # Create document record
             doc_id = str(uuid.uuid4())
