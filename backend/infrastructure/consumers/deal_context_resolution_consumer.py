@@ -145,23 +145,30 @@ class DealContextResolutionConsumer(BaseConsumer):
     ) -> Deal | None:
         """Find the Deal associated with a document.
 
-        Looks up deals related to this document via document_id.
-        The deal is created by promote_to_deal before the document.ready event.
+        Looks up the Deal via document_intake.promoted_deal_id.
+        The document_intake table bridges document_id -> promoted_deal_id -> deals.id.
+        The promoted_deal_id is set during promote-to-deal flow.
         """
-        from backend.models.deal_participant import DealParticipant
+        from sqlalchemy import text
 
-        # Check if a deal exists with this document_id
-        # In the current architecture, we look for deals that might reference
-        # this document. The promote-to-deal flow creates the deal first.
-        # We search by checking if any deal's documents reference this document_id.
-        stmt = select(Deal).where(Deal.id == document_id)
-        result = await session.execute(stmt)
-        deal = result.scalar_one_or_none()
-        if deal:
+        # Find promoted_deal_id from document_intake
+        row = await session.execute(
+            text(
+                "SELECT promoted_deal_id FROM document_intake "
+                "WHERE document_id = :doc_id",
+            ),
+            {"doc_id": str(document_id)},
+        )
+        promoted_deal_id: UUID | None = row.scalar_one_or_none()
+
+        if promoted_deal_id:
+            deal = await session.get(Deal, promoted_deal_id)
             return deal
 
-        # Fallback: try to find deal via document_id stored in event payload
-        # The payload from promote-to-deal contains deal_id
+        logger.warning(
+            "deal_context_resolution_no_promoted_deal_id",
+            document_id=str(document_id),
+        )
         return None
 
     async def _log_all_attempts(
