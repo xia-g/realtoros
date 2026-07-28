@@ -59,7 +59,7 @@ class DealContextResolver:
         Returns:
             DealResolutionContext with all resolution results.
         """
-        sections = profile.get("sections", {})
+        sections = profile.get("profile", {}).get("sections", {})
         parties = sections.get("parties", {})
         property_data = sections.get("property", {})
 
