@@ -20,6 +20,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 import asyncpg
+from sqlalchemy import text
 
 router = APIRouter(prefix="/documents", tags=["Document→Deal"])
 
@@ -255,6 +256,22 @@ async def promote_to_deal(document_id: str):
                     """,
                     deal_id,
                     public_document_id,
+                )
+
+                # Re-emit document.ready for DCR to process with updated promoted_deal_id
+                await conn.execute(
+                    text("""
+                    INSERT INTO event_outbox (event_type, aggregate_id, payload, status, created_at)
+                    VALUES ('document.ready', $1, $2, 'pending', NOW())
+                    ON CONFLICT (aggregate_id, event_type) DO NOTHING
+                    """),
+                    public_document_id,
+                    {
+                        "document_id": str(public_document_id),
+                        "status": "READY",
+                        "profile": intake["extracted_fields"] or {},  # Use existing profile from extracted_fields
+                        "pipeline_stage": "ANALYZED"
+                    }
                 )
 
             # Create document record
