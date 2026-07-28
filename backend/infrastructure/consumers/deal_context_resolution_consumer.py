@@ -81,6 +81,12 @@ class DealContextResolutionConsumer(BaseConsumer):
         document_id = UUID(str(document_id_str))
         profile = payload.get("profile", {})
 
+        logger.info(
+            "deal_context_resolution_start",
+            event_id=str(event.event_id),
+            document_id=str(document_id),
+        )
+
         async with self._session_factory() as session:
             try:
                 # 1. Find the target Deal via promoted_deal_id
@@ -89,7 +95,18 @@ class DealContextResolutionConsumer(BaseConsumer):
                 )
                 if deal is None:
                     # Already logged in _find_deal_by_document
+                    logger.info(
+                        "deal_context_resolution_no_deal_found",
+                        event_id=str(event.event_id),
+                        document_id=str(document_id),
+                    )
                     return ConsumerResult(success=True)  # Not an error — no deal yet
+
+                logger.info(
+                    "deal_context_resolution_deal_found",
+                    event_id=str(event.event_id),
+                    deal_id=str(deal.id),
+                )
 
                 # 2. Resolve Property, buyer, seller
                 resolver = DealContextResolver(session)

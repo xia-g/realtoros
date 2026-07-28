@@ -63,4 +63,11 @@ class KnowledgeRuntimeConsumer(BaseConsumer):
             document_id=event.aggregate_id,
             profile=event.payload.get("profile", {}),
         )
+
+        logger.info(
+            "knowledge_runtime_start",
+            event_id=str(event.event_id),
+            document_id=str(event.aggregate_id),
+        )
+
         await self._service.process(payload)
