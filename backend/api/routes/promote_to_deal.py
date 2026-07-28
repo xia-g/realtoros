@@ -149,7 +149,7 @@ async def promote_to_deal(document_id: str):
         async with pool.acquire() as conn:
             intake = await conn.fetchrow(
                 """SELECT id, company_id, file_name, classification, confidence,
-                          extracted_fields, status, promoted_deal_id, final_type
+                          extracted_fields, status, promoted_deal_id, final_type, file_hash
                    FROM accounting.document_intake WHERE id = $1""", document_id
             )
 
@@ -161,7 +161,7 @@ async def promote_to_deal(document_id: str):
                 if checksum:
                     intake = await conn.fetchrow(
                         """SELECT id, company_id, file_name, classification, confidence,
-                                  extracted_fields, status, promoted_deal_id, final_type
+                                  extracted_fields, status, promoted_deal_id, final_type, file_hash
                            FROM accounting.document_intake WHERE file_hash = $1""", checksum
                     )
 
@@ -237,6 +237,18 @@ async def promote_to_deal(document_id: str):
             # Mark promoted
             await conn.execute("UPDATE accounting.document_intake SET promoted_deal_id=$1, confidence_auto_promoted=$2 WHERE id=$3",
                                deal_id, conf_level == ConfidenceLevel.AUTO_PROMOTE, document_id)
+
+            # Update public.document_intake with promoted_deal_id for canonical Deal mapping (Epic 3)
+            # Match by checksum since public.document_intake.document_id may differ from accounting id
+            await conn.execute(
+                """
+                UPDATE public.document_intake
+                SET promoted_deal_id = $1
+                WHERE checksum = $2
+                """,
+                deal_id,
+                intake["file_hash"],
+            )
 
             # Create document record
             doc_id = str(uuid.uuid4())
