@@ -83,17 +83,13 @@ class DealContextResolutionConsumer(BaseConsumer):
 
         async with self._session_factory() as session:
             try:
-                # 1. Find the target Deal
+                # 1. Find the target Deal via promoted_deal_id
                 deal = await self._find_deal_by_document(
                     session, document_id
                 )
                 if deal is None:
-                    logger.error(
-                        "deal_context_resolution_deal_not_found",
-                        document_id=str(document_id),
-                        event_id=str(event.event_id),
-                    )
-                    return  # Not retryable — deal should exist
+                    # Already logged in _find_deal_by_document
+                    return ConsumerResult(success=True)  # Not an error — no deal yet
 
                 # 2. Resolve Property, buyer, seller
                 resolver = DealContextResolver(session)
@@ -148,6 +144,10 @@ class DealContextResolutionConsumer(BaseConsumer):
         Looks up the Deal via document_intake.promoted_deal_id.
         The document_intake table bridges document_id -> promoted_deal_id -> deals.id.
         The promoted_deal_id is set during promote-to-deal flow.
+
+        Returns None if promoted_deal_id is missing (document not yet promoted)
+        or if the referenced Deal no longer exists. Both cases are logged as
+        warnings — they are not retry errors.
         """
         from sqlalchemy import text
 
@@ -161,15 +161,25 @@ class DealContextResolutionConsumer(BaseConsumer):
         )
         promoted_deal_id: UUID | None = row.scalar_one_or_none()
 
-        if promoted_deal_id:
-            deal = await session.get(Deal, promoted_deal_id)
-            return deal
+        # If promoted_deal_id is NULL — document hasn't been promoted yet
+        if promoted_deal_id is None:
+            logger.warning(
+                "deal_context_resolution_no_promoted_deal_id",
+                document_id=str(document_id),
+                message="No promoted_deal_id found for document. Skipping Deal Context Resolution.",
+            )
+            return None
 
-        logger.warning(
-            "deal_context_resolution_no_promoted_deal_id",
-            document_id=str(document_id),
-        )
-        return None
+        # Load the Deal by promoted_deal_id
+        deal = await session.get(Deal, promoted_deal_id)
+        if deal is None:
+            logger.warning(
+                "deal_context_resolution_deal_not_found",
+                document_id=str(document_id),
+                promoted_deal_id=str(promoted_deal_id),
+                message="Deal referenced by promoted_deal_id not found in database.",
+            )
+        return deal
 
     async def _log_all_attempts(
         self,
