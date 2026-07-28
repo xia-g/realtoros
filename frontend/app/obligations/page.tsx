@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Sidebar } from '@/components/layout/sidebar'
 import { toast } from 'sonner'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.spcnn.ru'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai.spcnn.ru'
 const OBLIGATION_TYPES: Record<string, string> = {
   vat_payable: 'НДС к уплате',
   vat_deduction: 'НДС к вычету',

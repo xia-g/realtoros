@@ -55,9 +55,9 @@ sleep 6
 # Health checks
 echo ""
 echo "[3] Health checks..."
-curl -sf http://127.0.0.1:8090/health > /dev/null && echo "  ✅ Backend  :8090 — OK" || echo "  ❌ Backend  :8090 — FAIL"
-curl -sfI http://127.0.0.1:3000/ > /dev/null && echo "  ✅ Frontend :3000 — OK" || echo "  ❌ Frontend :3000 — FAIL"
-curl -sf http://127.0.0.1:8001/api/v1/health > /dev/null && echo "  ✅ OCR API  :8001 — OK" || echo "  ❌ OCR API  :8001 — FAIL"
+curl -sf --max-time 5 http://127.0.0.1:8090/health > /dev/null && echo "  ✅ Backend  :8090 — OK" || echo "  ❌ Backend  :8090 — FAIL"
+curl -sfI --max-time 5 http://127.0.0.1:3000/ > /dev/null && echo "  ✅ Frontend :3000 — OK" || echo "  ❌ Frontend :3000 — FAIL"
+curl -sf --max-time 5 http://127.0.0.1:8001/api/v1/health > /dev/null && echo "  ✅ OCR API  :8001 — OK" || echo "  ❌ OCR API  :8001 — FAIL"
 
 echo ""
 echo "=== Done ==="

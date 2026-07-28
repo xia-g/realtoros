@@ -10,7 +10,8 @@ export default function ImportsPage() {
       const fd = new FormData(); fd.append('file', file); fd.append('company_id', companyId)
       // Use standard fetch for multipart
       const token = JSON.parse(localStorage.getItem('realtor-auth')||'{}')?.state?.token
-      const r = await fetch('http://localhost:8000/upload/bank', { method:'POST', headers: token?{Authorization:'Bearer '+token}:{}, body:fd })
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai.spcnn.ru'
+      const r = await fetch(`${API_URL}/upload/bank`, { method:'POST', headers: token?{Authorization:'Bearer '+token}:{}, body:fd })
       const data = await r.json()
       setResult(data); toast.success(data.events_created + ' events created')
     } catch(e:any) { toast.error(e.message) }

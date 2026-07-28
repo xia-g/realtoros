@@ -2,10 +2,6 @@
 const nextConfig = {
   images: { unoptimized: true },
   trailingSlash: true,
-  env: {
-    NEXT_PUBLIC_API_URL: '',
-    NEXT_PUBLIC_WS_URL: '',
-  },
   async rewrites() {
     return [
       {

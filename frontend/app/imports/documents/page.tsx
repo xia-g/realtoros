@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { toast } from 'sonner'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.spcnn.ru'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai.spcnn.ru'
 const OCR_NODE_URL = process.env.NEXT_PUBLIC_OCR_NODE_URL || ''
 const SUPPORTED = ['PDF', 'JPG', 'JPEG', 'PNG', 'ZIP', 'DOC', 'DOCX', 'XLS', 'XLSX', 'XML', 'TXT']
 

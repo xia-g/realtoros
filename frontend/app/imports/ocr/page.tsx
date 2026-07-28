@@ -4,7 +4,8 @@ export default function OCRPage() {
   const [text, setText] = useState(''); const [result, setResult] = useState<any>(null)
   const classify = async ()=>{
     try {
-      const r = await fetch('http://localhost:8000/classify', { method:'POST', headers:{'Content-Type':'application/json'},
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai.spcnn.ru'
+      const r = await fetch(`${API_URL}/classify`, { method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({text: text||'test', filename:'doc.pdf'}) })
       setResult(await r.json())
     } catch(e:any) { setResult({error:e.message}) }

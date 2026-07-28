@@ -135,7 +135,7 @@ class OutboxRepository:
                         published_at = NOW()
                     WHERE id = %s
                     """,
-                    (event_id,),
+                    (str(event_id),),
                 )
             conn.commit()
             logger.debug("outbox_marked_published", event_id=str(event_id))
@@ -165,7 +165,7 @@ class OutboxRepository:
                         END
                     WHERE id = %s
                     """,
-                    (error, event_id),
+                    (error, str(event_id)),
                 )
             conn.commit()
             logger.warning(
@@ -229,7 +229,7 @@ class OutboxRepository:
                         last_error = NULL
                     WHERE id = %s
                     """,
-                    (event_id,),
+                    (str(event_id),),
                 )
             conn.commit()
             logger.info("outbox_retry", event_id=str(event_id))

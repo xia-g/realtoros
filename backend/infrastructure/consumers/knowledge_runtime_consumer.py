@@ -54,7 +54,13 @@ class KnowledgeRuntimeConsumer(BaseConsumer):
 
         Args:
             event: IntegrationEvent with payload containing
-                   document_id and profile data.
+                   profile data. document_id comes from aggregate_id.
         """
-        payload = DocumentReadyPayload(**event.payload)
+        # event.payload may contain 'status', 'profile' etc.
+        # DocumentReadyPayload expects: document_id, profile, source
+        # Use aggregate_id as document_id (document UUID stored in outbox row)
+        payload = DocumentReadyPayload(
+            document_id=event.aggregate_id,
+            profile=event.payload.get("profile", {}),
+        )
         await self._service.process(payload)

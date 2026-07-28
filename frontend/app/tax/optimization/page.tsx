@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Sidebar } from '@/components/layout/sidebar'
 import { toast } from 'sonner'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.spcnn.ru'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai.spcnn.ru'
 
 const REGIME_LABELS: Record<string, string> = {
   usn_income: 'УСН Доходы 6%',

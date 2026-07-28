@@ -33,7 +33,7 @@ class ConsumerStateRepository:
                     SELECT 1 FROM consumer_processed_events
                     WHERE consumer_name = %s AND event_id = %s
                     """,
-                    (consumer_name, event_id),
+                    (consumer_name, str(event_id)),
                 )
                 return cur.fetchone() is not None
         finally:
@@ -50,7 +50,7 @@ class ConsumerStateRepository:
                     VALUES (%s, %s)
                     ON CONFLICT (consumer_name, event_id) DO NOTHING
                     """,
-                    (consumer_name, event_id),
+                    (consumer_name, str(event_id)),
                 )
             conn.commit()
         except Exception:

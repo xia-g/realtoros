@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.spcnn.ru'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai.spcnn.ru'
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {
